@@ -2,6 +2,7 @@
 using System.Diagnostics.Metrics;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace scope_measurement_demo
 {
@@ -20,6 +21,8 @@ namespace scope_measurement_demo
         List<Measurement> measurements = new List<Measurement>();
         int currentline = 0;
         SerialPort serialPort;
+        private readonly StringBuilder _serialBuffer = new StringBuilder();
+        private const string MessageTerminator = "\n\n";
 
         Random random = new Random();
 
@@ -303,6 +306,7 @@ namespace scope_measurement_demo
                 serialPort.DataBits = int.Parse(cbdatabit.SelectedItem.ToString());
                 serialPort.StopBits = (StopBits)Enum.Parse(typeof(StopBits), cbstopbit.SelectedItem.ToString());
                 serialPort.Parity = (Parity)Enum.Parse(typeof(Parity), cbparitybit.SelectedItem.ToString());
+                serialPort.NewLine = "\n";
 
                 serialPort.DataReceived += SerialPort_DataReceived; // attach event
                 serialPort.Open(); // open COM port
@@ -316,16 +320,22 @@ namespace scope_measurement_demo
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string message = serialPort.ReadExisting(); // read one line
-            this.Invoke(new MethodInvoker(() =>
+            string incoming = serialPort.ReadExisting();
+            _serialBuffer.Append(incoming);
+
+            var buffer = _serialBuffer.ToString();
+            if (buffer.Contains(MessageTerminator))
             {
-                Textfromserial.AppendText(message); // show in textbox
-                string message2 = serialPort.ReadExisting();
-                debugtextbox2.AppendText(message2);
-                ReceivedData.Text = Textfromserial.Text;
-                Dataprocess();
-            }));
-            
+                string message = buffer;
+                _serialBuffer.Clear();
+                this.Invoke(new MethodInvoker(() =>
+                {
+                    Textfromserial.AppendText(message);
+                    ReceivedData.Text = Textfromserial.Text;
+                    Dataprocess();
+                }));
+            }
+
         }
 
         private void Disconnect_Click(object sender, EventArgs e)
