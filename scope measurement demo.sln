@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36327.8
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "scope measurement demo", "scope measurement demo\scope measurement demo.csproj", "{E75E3B56-DB56-42B1-8EEC-F53423801543}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E75E3B56-DB56-42B1-8EEC-F53423801543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E75E3B56-DB56-42B1-8EEC-F53423801543}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E75E3B56-DB56-42B1-8EEC-F53423801543}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E75E3B56-DB56-42B1-8EEC-F53423801543}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {853150B3-3A2F-4E62-9EE6-27451C6EF02D}
+	EndGlobalSection
+EndGlobal
