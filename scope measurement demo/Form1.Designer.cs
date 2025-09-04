@@ -236,7 +236,7 @@
             testbt.Name = "testbt";
             testbt.Size = new Size(82, 22);
             testbt.TabIndex = 13;
-            testbt.Text = "test";
+            testbt.Text = "clear";
             testbt.UseVisualStyleBackColor = true;
             testbt.Click += testbt_Click;
             // 
