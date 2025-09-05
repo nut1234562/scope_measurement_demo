@@ -4,6 +4,7 @@ using System.Diagnostics.Metrics;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Forms;
 namespace scope_measurement_demo
 {
 
@@ -23,11 +24,12 @@ namespace scope_measurement_demo
         double l1Value = 0, l2Value = 0;
         int currentline = 0;
         string incoming;
-        private readonly StringBuilder _serialBuffer = new StringBuilder();
-        private const string MessageTerminator = "\n\n";
         static readonly Stopwatch sw = Stopwatch.StartNew();
         static long last = 0;
         const long period = 1000;
+        private readonly StringBuilder _serialBuffer = new StringBuilder();
+        private const string MessageTerminator = "\n\n";
+        private System.Windows.Forms.Timer serialTimeoutTimer;
 
         SerialPort serialPort;
         [DllImport("user32.dll", SetLastError = true)]
@@ -41,13 +43,18 @@ namespace scope_measurement_demo
             InitializeComponent();
             variables = new double[] { DX1, DY1, D, R, L1, L2, L3, L4, XC, YC, X, Y };
 
-            SerialPort serialPort = new SerialPort();
+            serialPort = new SerialPort();
             foreach (var port in SerialPort.GetPortNames())
             {
                 cbport.Items.Add(port); // เพิ่มชื่อ port ทีละตัว
             }
 
-            cbport.SelectedIndex = 0; 
+            // In your constructor or Form1_Load
+            serialTimeoutTimer = new System.Windows.Forms.Timer();
+            serialTimeoutTimer.Interval = 6000; // 2 seconds
+            serialTimeoutTimer.Tick += SerialTimeoutTimer_Tick;
+
+            cbport.SelectedIndex = 0;
             cbbaudrate.SelectedIndex = 0; // ตั้งค่า baudrate เป็นค่าเริ่มต้น
             cbdatabit.SelectedIndex = 0; // ตั้งค่า data bit เป็นค่าเริ่มต้น
             cbstopbit.SelectedIndex = 0; // ตั้งค่า stop bit เป็นค่าเริ่มต้น
@@ -125,6 +132,7 @@ namespace scope_measurement_demo
                 Itemcb.Items.Add("Concentric (Gate Side)");
                 Itemcb.Items.Add("Concentric (Ejector Side)");
                 Itemcb.Items.Add("Thickness (Gate Side)");
+                Itemcb.Items.Add("Thickness (Ejector Side)");
                 Itemcb.Items.Add("OD 1 & 2 (Gate)");
                 Itemcb.Items.Add("ID 1 & 2 (Gate)");
                 Itemcb.Items.Add("Concentric 1 & 2 (Gate Side)");
@@ -151,132 +159,11 @@ namespace scope_measurement_demo
                 Itemcb.Items.Clear();
                 Itemcb.Items.Add("OD, ID (Gate Side)");
                 Itemcb.Items.Add("OD, ID (Ejector Side)");
+                Itemcb.SelectedIndex = 0;
 
             }
 
         }
-
-
-        private void Printbt_Click(object sender, EventArgs e)
-        {
-
-            /*foreach(double things in variables){
-                double variant = things;
-                variant = Math.Round(random.NextDouble() * 100, 6);
-            }
-            XC = Math.Round(random.NextDouble() * 100, 6); YC = Math.Round(random.NextDouble() * 100, 6); D = Math.Round(random.NextDouble() * 100, 6); R = Math.Round(random.NextDouble() * 100, 6);
-            L1 = Math.Round(random.NextDouble() * 100, 6); L2 = Math.Round(random.NextDouble() * 100, 6); DX1 = Math.Round(random.NextDouble() * 100, 6); DY1 = Math.Round(random.NextDouble() * 100, 6);
-            X = Math.Round(random.NextDouble() * 100, 6); Y = Math.Round(random.NextDouble() * 100, 6);
-            L3 = Math.Round(random.NextDouble() * 100, 6); L4 = Math.Round(random.NextDouble() * 100, 6);
-            currentline = 0;
-            ConvertedData.Clear();
-            ReceivedData.Clear();
-            ReceivedData.AppendText($"No.1\r\nRectangle 5/5\r\n-1-\r\n    X {X}\r\n    Y {Y}\r\n    L1 {L1}\r\n    L2 {L2}\r\n\r\n");
-            ReceivedData.AppendText($"No.2\r\nCircle(Multi) 4/4\r\n-1-\r\n    LS\r\n    Xc {XC}\r\n    Yc {YC}\r\n    D {D}\r\n    R {R}\r\n\r\n");
-            ReceivedData.AppendText($"No.3\r\nCircle(Multi) 4/4\r\n-1-\r\n    LS\r\n    Xc {XC}\r\n    Yc {YC}\r\n    D {D}\r\n    R {R}\r\n\r\n");
-            ReceivedData.AppendText($"No.4\r\nDistance(Point-Point) 2/2\r\n-1-\r\n    L {L1}\r\n    dX {DX1}\r\n    dY {DY1}\r\n\r\n");
-            ReceivedData.AppendText($"No.5\r\nDistance(Point-Point) 2/2\r\n-1-\r\n    L {L2}\r\n    dX {DX1}\r\n    dY {DY1}\r\n");
-
-            string inputText = ReceivedData.Text;
-            string[] eachlines = inputText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (string line in eachlines)
-            {
-                string trimmedLine = line.Trim();
-
-                if (trimmedLine.StartsWith("dX"))
-                {
-                    // Split the line by space and get the second element
-                    string[] parts = trimmedLine.Split(' ');
-                    if (parts.Length > 1 && double.TryParse(parts[1], out double dxValue))
-                    {
-                        dx1 = dxValue;
-                    }
-                }
-                else if (trimmedLine.StartsWith("No.4"))
-                {
-                    trimmedLine = eachlines[currentline + 3].Trim(); ;
-                    if (trimmedLine.StartsWith("L"))
-                    {
-                        string[] parts = trimmedLine.Split(' ');
-                        if (parts.Length > 1 && double.TryParse(parts[1], out double l3Value))
-                        {
-                            l3 = l3Value;
-                        }
-                    }
-                }
-                else if (trimmedLine.StartsWith("No.5"))
-                {
-                    trimmedLine = eachlines[currentline + 3].Trim(); ;
-                    if (trimmedLine.StartsWith("L"))
-                    {
-                        string[] parts = trimmedLine.Split(' ');
-                        if (parts.Length > 1 && double.TryParse(parts[1], out double l4Value))
-                        {
-                            l4 = l4Value;
-                        }
-                    }
-                }
-                else if (trimmedLine.StartsWith("dY"))
-                {
-                    // Split the line by space and get the second element
-                    string[] parts = trimmedLine.Split(' ');
-                    if (parts.Length > 1 && double.TryParse(parts[1], out double dyValue))
-                    {
-                        dy1 = dyValue;
-                    }
-                }
-                else if (trimmedLine.StartsWith("dY"))
-                {
-                    string[] parts = trimmedLine.Split(' ');
-                    if (parts.Length > 1 && double.TryParse(parts[1], out double yValue))
-                    {
-                        dy1 = yValue;
-                    }
-                }
-
-                currentline++;
-            }
-
-            if (multiplier.SelectedIndex == 1)
-            {
-                xc *= 10;
-                yc *= 10;
-                d *= 10;
-                r *= 10;
-                l1 *= 10;
-                l2 *= 10;
-                l3 *= 10;
-                l4 *= 10;
-                dx1 *= 10;
-                dy1 *= 10;
-            }
-
-            int decimalPlaces = decimaal.SelectedIndex + 1;
-            xc = Math.Round(xc, decimalPlaces);
-            yc = Math.Round(yc, decimalPlaces);
-            d = Math.Round(d, decimalPlaces);
-            r = Math.Round(r, decimalPlaces);
-            l1 = Math.Round(l1, decimalPlaces);
-            l2 = Math.Round(l2, decimalPlaces);
-            l3 = Math.Round(l3, decimalPlaces);
-            l4 = Math.Round(l4, decimalPlaces);
-            dx1 = Math.Round(dx1, decimalPlaces);
-            dy1 = Math.Round(dy1, decimalPlaces);
-
-            ConvertedData.AppendText($"L: {l3} \r\n L: {l4} \r\n dY: {dy1} \r\n ");*/
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void decimaal_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
         // Replace the Refresh_Click method with the following code
         private void Refresh_Click(object sender, EventArgs e)
         {
@@ -297,11 +184,14 @@ namespace scope_measurement_demo
         {
             int md = Modelcb.SelectedIndex;
             int it = Itemcb.SelectedIndex;
-            if (md == 0 || md == 3 || md == 4)//เลือกว่าปริ้นกี่บรรทัด โดยเลือกตาม model และ item
+            if (md == 0 || md == 3)//เลือกว่าปริ้นกี่บรรทัด โดยเลือกตาม model และ item
                 return 6;
 
             else if (md == 1)//ถ้าปริ้น 7 บรรทัด
                 return 20;
+
+            else if (md == 4 & it == 0)
+                return 5;
 
             else if (md == 2)
                 return 35;
@@ -316,8 +206,8 @@ namespace scope_measurement_demo
             else if (md == 7 || md == 8 && it == 8)
                 return 19;
 
-            else if (md == 8 && it == 0 || it == 1)
-                return 39;
+            else if (md == 8 && it == 0 || md == 8 && it == 1)
+                return 41;
 
             else if (md == 8 && it == 2 || it == 3)
                 return 27;
@@ -326,12 +216,12 @@ namespace scope_measurement_demo
                 return 7;
 
             else if (md == 8 && it == 5)
-                return 15;
+                return 19;
 
-            else if (md == 8 && it == 6)
+            else if (md == 8 && it == 6 || md == 8 && it == 9)
                 return 13;
 
-            else if(md == 9)
+            else if (md == 9)
                 return 29;
 
             else if (md == 11 && it == 0 || it == 1)
@@ -343,51 +233,80 @@ namespace scope_measurement_demo
 
         private void Connect_Click(object sender, EventArgs e)
         {
-            if (cbport.SelectedItem == null || cbbaudrate.SelectedItem == null || cbdatabit.SelectedItem == null ||
-            cbstopbit.SelectedItem == null || cbparitybit.SelectedItem == null)
+            if (!serialPort.IsOpen)
             {
-                MessageBox.Show("Please select all serial port settings.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                if (cbport.SelectedItem == null || cbbaudrate.SelectedItem == null || cbdatabit.SelectedItem == null ||
+                cbstopbit.SelectedItem == null || cbparitybit.SelectedItem == null)
+                {
+                    MessageBox.Show("Please select all serial port settings.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-            try
-            {
-                serialPort = new SerialPort(); // assign to class-level variable
-                serialPort.PortName = cbport.SelectedItem.ToString();
-                serialPort.BaudRate = int.Parse(cbbaudrate.SelectedItem.ToString());
-                serialPort.DataBits = int.Parse(cbdatabit.SelectedItem.ToString());
-                serialPort.StopBits = (StopBits)Enum.Parse(typeof(StopBits), cbstopbit.SelectedItem.ToString());
-                serialPort.Parity = (Parity)Enum.Parse(typeof(Parity), cbparitybit.SelectedItem.ToString());
+                try
+                {
+                    serialPort = new SerialPort(); // assign to class-level variable
+                    serialPort.PortName = cbport.SelectedItem.ToString();
+                    serialPort.BaudRate = int.Parse(cbbaudrate.SelectedItem.ToString());
+                    serialPort.DataBits = int.Parse(cbdatabit.SelectedItem.ToString());
+                    serialPort.StopBits = (StopBits)Enum.Parse(typeof(StopBits), cbstopbit.SelectedItem.ToString());
+                    serialPort.Parity = (Parity)Enum.Parse(typeof(Parity), cbparitybit.SelectedItem.ToString());
 
-                serialPort.DataReceived += SerialPort_DataReceived; // attach event
-                serialPort.Open(); // open COM port
-                MessageBox.Show("Serial Port connected successfully!");
+                    serialPort.DataReceived += SerialPort_DataReceived; // attach event
+                    serialPort.Open(); // open COM port
+                    MessageBox.Show("Serial Port connected successfully!");
+                    UpdateConnectionStatus(true);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error connecting to Serial Port: {ex.Message}");
+                    UpdateConnectionStatus(false);
+                }
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show($"Error connecting to Serial Port: {ex.Message}");
+                MessageBox.Show("Serial Port is already open.");
             }
         }
-
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
 
-                incoming = serialPort.ReadLine();
-                this.Invoke(new MethodInvoker(() =>
+            incoming = serialPort.ReadLine();
+            this.Invoke(new MethodInvoker(() =>
+            {
+                Textfromserial.AppendText(incoming + Environment.NewLine);
+                Statelb.Text = "AppendText";
+                serialTimeoutTimer.Stop();
+                serialTimeoutTimer.Start();
+                int expectedLines = GetExpectedLineCount();
+                Statelb.Text = "Get expected line count";
+                Thread.Sleep(10);              
+                serialLineBuffer.Add(incoming);
+                if (serialLineBuffer.Count == expectedLines)
                 {
-                    Textfromserial.AppendText(incoming + Environment.NewLine);
-                    int expectedLines = GetExpectedLineCount();
-                    serialLineBuffer.Add(incoming);
-                    if (serialLineBuffer.Count == expectedLines)
-                     {
-                     ReceivedData.Text = string.Join(Environment.NewLine, serialLineBuffer);
-                     Dataprocess();
-                     serialLineBuffer.Clear();
-                     }
-                    
-                }));
+                    ReceivedData.Clear();
+                    Thread.Sleep(10);
+                    ReceivedData.Text = string.Join(Environment.NewLine, serialLineBuffer);
+                    Statelb.Text = "join string";
+                    Dataprocess();
+                    Statelb.Text = "Data process";
+                    serialLineBuffer.Clear();
+                }
 
-            
+            }));
+
+
+        }
+
+        private void SerialTimeoutTimer_Tick(object sender, EventArgs e)
+        {
+            Textfromserial.Clear();
+            serialTimeoutTimer.Stop(); // Stop timer after clearing
+        }
+
+        private void UpdateConnectionStatus(bool isConnected)
+        {
+            lblConnectionStatus.Text = isConnected ? "Connected" : "Disconnected";
+            lblConnectionStatus.ForeColor = isConnected ? Color.Green : Color.Red;
         }
 
         private void Disconnect_Click(object sender, EventArgs e)
@@ -396,18 +315,21 @@ namespace scope_measurement_demo
             {
                 serialPort.Close();
                 MessageBox.Show("Serial Port disconnected!");
+                UpdateConnectionStatus(false);
             }
             else MessageBox.Show("Serial Port is not open.");
         }
 
-        private void Dataprocess() 
+        private void Dataprocess()
         {
+            measurements.Clear();
             string[] lines = ReceivedData.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            Statelb.Text = "Split text";
             foreach (string line in lines)
             {
                 debugtextbox.AppendText("each line " + line + Environment.NewLine);
             }
-            if(Modelcb.SelectedIndex == 0)//1st gear
+            if (Modelcb.SelectedIndex == 0)//1st gear
             {
                 ExtractMethod_0(lines);
                 ConvertedData.Clear();
@@ -415,7 +337,7 @@ namespace scope_measurement_demo
                 Keypress(0, measurements[0].L);
             }
 
-            else if(Modelcb.SelectedIndex == 1)//VHB30
+            else if (Modelcb.SelectedIndex == 1)//VHB30
             {
                 ExtractMethod_0(lines);
                 ConvertedData.Clear();
@@ -443,14 +365,15 @@ namespace scope_measurement_demo
             {
                 ExtractMethod_2(lines);
                 ConvertedData.Clear();
-                var (ia1,ia2,ia3) = ExtractMethod_2(lines);
+                var (ia1, ia2, ia3) = ExtractMethod_2(lines);
                 ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3}\r\n");
                 Keypress(2, ia1, ia2, ia3);
+                ia1 = 0; ia2 = 0; ia3 = 0;
             }
 
             else if (Modelcb.SelectedIndex == 5)//14RA-PM20TF80-2
             {
-                if(Itemcb.SelectedIndex == 0)//OD3
+                if (Itemcb.SelectedIndex == 0)//OD3
                 {
                     ExtractMethod_3(lines);
                     ConvertedData.Clear();
@@ -477,12 +400,12 @@ namespace scope_measurement_demo
             }
 
             else if (Modelcb.SelectedIndex == 7)//PM255
-            {   
+            {
                 ExtractMethod_3(lines);
                 ConvertedData.Clear();
-                ConvertedData.AppendText($"D: {measurements[0].L}\r\n" +
-                                         $"D: {measurements[1].L}\r\n");
-                Keypress(3, measurements[0].L, measurements[1].L);
+                ConvertedData.AppendText($"D: {measurements[0].D}\r\n" +
+                                         $"D: {measurements[1].D}\r\n");
+                Keypress(3, measurements[0].D, measurements[1].D);
             }
 
             else if (Modelcb.SelectedIndex == 8)//Se-Series
@@ -491,18 +414,18 @@ namespace scope_measurement_demo
                 {
                     ExtractMethod_0(lines);
                     ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[0].L}" +
-                                             $"L: {measurements[1].L}");
-                    Keypress(3, measurements[0].L, measurements[1].L);
+                    ConvertedData.AppendText($"L: {measurements[3].L} " +
+                                             $"L: {measurements[4].L}");
+                    Keypress(3, measurements[3].L, measurements[4].L);
                 }
 
                 else if (Itemcb.SelectedIndex == 1)//Concentric (Ejector Side)
                 {
                     ExtractMethod_0(lines);
                     ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[0].L}" +
-                                             $"L: {measurements[1].L}");
-                    Keypress(3, measurements[0].L, measurements[1].L);
+                    ConvertedData.AppendText($"L: {measurements[3].L} " +
+                                             $"L: {measurements[4].L}");
+                    Keypress(3, measurements[3].L, measurements[4].L);
                 }
 
                 else if (Itemcb.SelectedIndex == 2)//Thickness(Gate side)
@@ -538,10 +461,10 @@ namespace scope_measurement_demo
                     .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
                     .FirstOrDefault(line => line.Trim().StartsWith("L2"));
 
-                    ExtractMethod_4(l1Line,l2Line);
+                    ExtractMethod_4(l1Line, l2Line);
                     ConvertedData.Clear();
                     ConvertedData.AppendText($"L1: {l1Value}\r\nL2: {l2Value}\r\n");
-                    Keypress(3,l2Value,l2Value);
+                    Keypress(3, l1Value, l2Value);
                 }
 
                 else if (Itemcb.SelectedIndex == 5)// ID 1 & 2 (Gate)
@@ -566,15 +489,19 @@ namespace scope_measurement_demo
                     string l1Line = inputText
                     .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
                     .FirstOrDefault(line => line.Trim().StartsWith("L1"));
+                    Statelb.Text = "String split";
 
                     string l2Line = inputText
                     .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
                     .FirstOrDefault(line => line.Trim().StartsWith("L2"));
+                    Statelb.Text = "String split";
 
-                    ExtractMethod_4(l1Line,l2Line);
+                    ExtractMethod_4(l1Line, l2Line);
                     ConvertedData.Clear();
                     ConvertedData.AppendText($"L1: {l1Value}\r\nL2: {l2Value}\r\n");
-                    Keypress(3,l1Value, l2Value);
+                    Keypress(3, l1Value, l2Value);
+                    l1Value = 0; l2Value = 0;
+                    l1Line = null; l2Line = null;
                 }
 
                 else if (Itemcb.SelectedIndex == 8)// ID 1 & 2 (Ejector Side)
@@ -614,25 +541,23 @@ namespace scope_measurement_demo
             {
                 ExtractMethod_3(lines);
                 ConvertedData.Clear();
-                if(Itemcb.SelectedIndex == 0)//OD, ID (Gate Side)
+                if (Itemcb.SelectedIndex == 0)//OD, ID (Gate Side)
                 {
                     ConvertedData.AppendText($"D: {measurements[0].D}\r\nD: {measurements[1].D}\r\n");
                     Keypress(4, measurements[0].D, measurements[1].D);
                 }
-                else if(Itemcb.SelectedIndex == 1)//OD, ID (Ejector Side)
+                else if (Itemcb.SelectedIndex == 1)//OD, ID (Ejector Side)
                 {
                     ConvertedData.AppendText($"D: {measurements[0].D}\r\nD: {measurements[1].D}\r\n");
                     Keypress(4, measurements[0].D, measurements[1].D);
                 }
             }
-            //ReceivedData.Clear();
-            //Textfromserial.Clear();
 
         }
 
         private void ExtractMethod_0(string[] lines)
         {
-
+            Statelb.Text = "Extract";
             for (int i = 0; i < lines.Length; i++)
             {
                 if (lines[i].Trim().StartsWith("N"))
@@ -644,12 +569,15 @@ namespace scope_measurement_demo
                     for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
                     {
                         string trimmedLine = lines[i + j].Trim();
+                        Thread.Sleep(10);
                         string[] parts = trimmedLine.Split(' ');
+                        Thread.Sleep(10);
                         if (parts.Length > 1)
                         {
                             if (trimmedLine.StartsWith("L"))
                             {
                                 var valueStr = trimmedLine.Substring(1).Trim();
+                                Thread.Sleep(10);
                                 if (double.TryParse(valueStr, out double lValue))
                                 {
                                     currentMeasurement.L = lValue;
@@ -691,22 +619,26 @@ namespace scope_measurement_demo
 
         private void ExtractMethod_1(string[] lines)
         {
+            Statelb.Text = "Extract";
             for (int i = 0; i < lines.Length; i++)
             {
-                if (lines[i].Trim().StartsWith("No."))
+                if (lines[i].Trim().StartsWith("N"))
                 {
                     Measurement currentMeasurement = new Measurement();
 
-                    int linesToRead = 7;
+                    int linesToRead = 8;
                     for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
                     {
                         string trimmedLine = lines[i + j].Trim();
+                        Thread.Sleep(10);
                         string[] parts = trimmedLine.Split(' ');
+                        Thread.Sleep(10);
                         if (parts.Length > 1)
                         {
                             if (trimmedLine.StartsWith("R") && double.TryParse(parts[1], out double RValue))
                             {
                                 currentMeasurement.R = RValue;
+                                Thread.Sleep(10);
                                 debugtextbox2.AppendText($" R: {currentMeasurement.R}");
                             }
                         }
@@ -733,7 +665,8 @@ namespace scope_measurement_demo
             }
 
             else if (decimaal.SelectedIndex != -1)
-            { int decimalPlaces = decimaal.SelectedIndex + 1;
+            {
+                int decimalPlaces = decimaal.SelectedIndex + 1;
                 foreach (Measurement measurement in measurements)
                 {
                     measurement.R = Math.Round(measurement.R, decimalPlaces);
@@ -743,6 +676,7 @@ namespace scope_measurement_demo
 
         private (double ia1, double ia2, double ia3) ExtractMethod_2(string[] lines)
         {
+            Statelb.Text = "Extract";
             string iaLine = lines.FirstOrDefault(line => line.Trim().StartsWith("IA"));
             double ia1 = 0, ia2 = 0, ia3 = 0;
             if (iaLine != null)
@@ -787,22 +721,26 @@ namespace scope_measurement_demo
 
         private void ExtractMethod_3(string[] lines)
         {
+            Statelb.Text = "Extract";
             for (int i = 0; i < lines.Length; i++)
             {
                 if (lines[i].Trim().StartsWith("N"))
                 {
                     Measurement currentMeasurement = new Measurement();
 
-                    int linesToRead = 10;
+                    int linesToRead = 9;
                     for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
                     {
                         string trimmedLine = lines[i + j].Trim();
+                        Thread.Sleep(10);
                         string[] parts = trimmedLine.Split(' ');
+                        Thread.Sleep(10);
                         if (parts.Length > 1)
                         {
                             if (trimmedLine.StartsWith("D") && double.TryParse(parts[1], out double DValue))
                             {
                                 currentMeasurement.D = DValue;
+                                Thread.Sleep(10);
                             }
                         }
                     }
@@ -829,21 +767,25 @@ namespace scope_measurement_demo
         }
 
         private void ExtractMethod_4(string l1Line, string l2Line)
-        { 
-
+        {
+            Statelb.Text = "Extract";
             // 2) If found, split the line by spaces -> ["L1", "123.45"]
             if (l1Line != null)
             {
                 string[] parts = l1Line.Trim().Split(' ');
+                Thread.Sleep(10);
                 if (parts.Length > 1 && double.TryParse(parts[1], out double val))
                     l1Value = val; // save the number
+                Thread.Sleep(10);
             }
 
             if (l2Line != null)
             {
                 string[] parts = l2Line.Trim().Split(' ');
+                Thread.Sleep(10);
                 if (parts.Length > 1 && double.TryParse(parts[1], out double val))
                     l2Value = val;
+                Thread.Sleep(10);
             }
 
             if (decimaal.SelectedIndex == -1)
@@ -864,8 +806,9 @@ namespace scope_measurement_demo
             }
         }
 
-        private void Keypress(int key, double value1, double value2 = 0 , double value3 = 0, double value4 = 0)
+        private void Keypress(int key, double value1, double value2 = 0, double value3 = 0, double value4 = 0)
         {
+            Statelb.Text = "Keypress";
             IntPtr hExcel = FindWindow("XLMAIN", null);
             if (hExcel == IntPtr.Zero)
             {
@@ -889,11 +832,15 @@ namespace scope_measurement_demo
                 String text3 = value3.ToString();
                 String text4 = value4.ToString();
                 SendKeys.SendWait(text1);
+                Thread.Sleep(100);
                 SendKeys.SendWait("{RIGHT}");
                 SendKeys.SendWait(text2);
+                Thread.Sleep(100);
                 SendKeys.SendWait("{RIGHT}");
                 SendKeys.SendWait(text3);
+                Thread.Sleep(100); Thread.Sleep(100);
                 SendKeys.SendWait("{RIGHT}");
+                Thread.Sleep(100);
                 SendKeys.SendWait(text4);
 
             }
@@ -915,25 +862,24 @@ namespace scope_measurement_demo
                 String text1 = value1.ToString();
                 String text2 = value2.ToString();
                 SendKeys.SendWait(text1);
+                Thread.Sleep(100);
                 SendKeys.SendWait("{RIGHT}");
+                Thread.Sleep(100);
                 SendKeys.SendWait(text2);
             }
 
-            else if (key == 4) 
+            else if (key == 4)
             {
                 String text1 = value1.ToString();
                 String text2 = value2.ToString();
                 SendKeys.SendWait(text1);
+                Thread.Sleep(100);
                 SendKeys.SendWait("{RIGHT}");
+                Thread.Sleep(100);
                 SendKeys.SendWait("{RIGHT}");
+                Thread.Sleep(100);
                 SendKeys.SendWait(text2);
             }
-        }
-
-
-        private void cbparitybit_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void testbt_Click(object sender, EventArgs e)
@@ -942,11 +888,7 @@ namespace scope_measurement_demo
             ReceivedData.Clear();
             Textfromserial.Clear();
             debugtextbox2.Clear();
-        }
-
-        private void cbport_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
+            ConvertedData.Clear();
         }
     }
 
