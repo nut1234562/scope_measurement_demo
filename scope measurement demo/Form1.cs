@@ -137,7 +137,7 @@ namespace scope_measurement_demo
                 Itemcb.Items.Add("ID 1 & 2 (Gate)");
                 Itemcb.Items.Add("Concentric 1 & 2 (Gate Side)");
                 Itemcb.Items.Add("OD 1 & 2 (Ejector Side)");
-                Itemcb.Items.Add("ID 1 & 2 (Ejector Side");
+                Itemcb.Items.Add("ID 1 & 2 (Ejector Side)");
                 Itemcb.Items.Add("Concentric 1 2 (Ejector Side)");
                 Itemcb.SelectedIndex = 0;
             }
@@ -250,9 +250,12 @@ namespace scope_measurement_demo
                     serialPort.DataBits = int.Parse(cbdatabit.SelectedItem.ToString());
                     serialPort.StopBits = (StopBits)Enum.Parse(typeof(StopBits), cbstopbit.SelectedItem.ToString());
                     serialPort.Parity = (Parity)Enum.Parse(typeof(Parity), cbparitybit.SelectedItem.ToString());
-
+                    serialPort.DtrEnable = true;
+                    serialPort.RtsEnable = true;
                     serialPort.DataReceived += SerialPort_DataReceived; // attach event
                     serialPort.Open(); // open COM port
+                    serialPort.ErrorReceived += SerialPort_ErrorReceived;
+                    serialPort.PinChanged += SerialPort_PinChanged;
                     MessageBox.Show("Serial Port connected successfully!");
                     UpdateConnectionStatus(true);
                 }
@@ -269,37 +272,52 @@ namespace scope_measurement_demo
         }
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-
-            incoming = serialPort.ReadLine();
-            this.Invoke(new MethodInvoker(() =>
+            try
             {
-                Textfromserial.AppendText(incoming + Environment.NewLine);
-                Statelb.Text = "AppendText";
-                serialTimeoutTimer.Stop();
-                serialTimeoutTimer.Start();
-                int expectedLines = GetExpectedLineCount();
-                Statelb.Text = "Get expected line count";
-                Thread.Sleep(10);              
-                serialLineBuffer.Add(incoming);
-                if (serialLineBuffer.Count == expectedLines)
+                incoming = serialPort.ReadLine();
+            }
+            catch (IOException)
+            {
+                BeginInvoke(new Action(() => UpdateConnectionStatus(false)));
+                return;
+            }
+            catch (InvalidOperationException)
+            {
+                BeginInvoke(new Action(() => UpdateConnectionStatus(false)));
+                return;
+            }
+
+            this.Invoke(new MethodInvoker(() =>
                 {
-                    ReceivedData.Clear();
-                    Thread.Sleep(10);
-                    ReceivedData.Text = string.Join(Environment.NewLine, serialLineBuffer);
-                    Statelb.Text = "join string";
-                    Dataprocess();
-                    Statelb.Text = "Data process";
-                    serialLineBuffer.Clear();
-                }
+                    Textfromserial.AppendText(incoming + Environment.NewLine);
+                    Statelb.Text = "AppendText";
+                    serialTimeoutTimer.Stop();
+                    serialTimeoutTimer.Start();
+                    int expectedLines = GetExpectedLineCount();
+                    Statelb.Text = "Get expected line count";
+                    serialLineBuffer.Add(incoming);
+                    if (serialLineBuffer.Count == expectedLines)
+                    {
+                        ReceivedData.Clear();
+                        ReceivedData.Text = string.Join(Environment.NewLine, serialLineBuffer);
+                        Statelb.Text = "join string";
+                        Dataprocess();
+                        Statelb.Text = "Data process";
+                        serialLineBuffer.Clear();
+                    }
 
-            }));
-
-
+                }));
         }
 
         private void SerialTimeoutTimer_Tick(object sender, EventArgs e)
         {
             Textfromserial.Clear();
+            if (serialPort.IsOpen)
+            {
+                try { serialPort.Close(); } catch { }
+            }
+            serialLineBuffer.Clear();
+            ReceivedData.Clear();
             serialTimeoutTimer.Stop(); // Stop timer after clearing
         }
 
@@ -307,6 +325,37 @@ namespace scope_measurement_demo
         {
             lblConnectionStatus.Text = isConnected ? "Connected" : "Disconnected";
             lblConnectionStatus.ForeColor = isConnected ? Color.Green : Color.Red;
+        }
+
+        private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        {
+            BeginInvoke(new Action(() =>
+            {
+                if (serialPort.IsOpen)
+                {
+                    try { serialPort.Close(); } catch { }
+                }
+                UpdateConnectionStatus(false);
+            }));
+        }
+
+        private void SerialPort_PinChanged(object sender, SerialPinChangedEventArgs e)
+        {
+            if (e.EventType == SerialPinChange.CDChanged ||
+                e.EventType == SerialPinChange.DsrChanged ||
+                e.EventType == SerialPinChange.CtsChanged ||
+                e.EventType == SerialPinChange.Break ||
+                e.EventType == SerialPinChange.Ring)
+            {
+                BeginInvoke(new Action(() =>
+                {
+                    if (serialPort.IsOpen)
+                    {
+                        try { serialPort.Close(); } catch { }
+                    }
+                    UpdateConnectionStatus(false);
+                }));
+            }
         }
 
         private void Disconnect_Click(object sender, EventArgs e)
@@ -569,15 +618,12 @@ namespace scope_measurement_demo
                     for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
                     {
                         string trimmedLine = lines[i + j].Trim();
-                        Thread.Sleep(10);
                         string[] parts = trimmedLine.Split(' ');
-                        Thread.Sleep(10);
                         if (parts.Length > 1)
                         {
                             if (trimmedLine.StartsWith("L"))
                             {
                                 var valueStr = trimmedLine.Substring(1).Trim();
-                                Thread.Sleep(10);
                                 if (double.TryParse(valueStr, out double lValue))
                                 {
                                     currentMeasurement.L = lValue;
@@ -630,15 +676,12 @@ namespace scope_measurement_demo
                     for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
                     {
                         string trimmedLine = lines[i + j].Trim();
-                        Thread.Sleep(10);
                         string[] parts = trimmedLine.Split(' ');
-                        Thread.Sleep(10);
                         if (parts.Length > 1)
                         {
                             if (trimmedLine.StartsWith("R") && double.TryParse(parts[1], out double RValue))
                             {
                                 currentMeasurement.R = RValue;
-                                Thread.Sleep(10);
                                 debugtextbox2.AppendText($" R: {currentMeasurement.R}");
                             }
                         }
@@ -732,15 +775,12 @@ namespace scope_measurement_demo
                     for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
                     {
                         string trimmedLine = lines[i + j].Trim();
-                        Thread.Sleep(10);
                         string[] parts = trimmedLine.Split(' ');
-                        Thread.Sleep(10);
                         if (parts.Length > 1)
                         {
                             if (trimmedLine.StartsWith("D") && double.TryParse(parts[1], out double DValue))
                             {
                                 currentMeasurement.D = DValue;
-                                Thread.Sleep(10);
                             }
                         }
                     }
@@ -773,19 +813,15 @@ namespace scope_measurement_demo
             if (l1Line != null)
             {
                 string[] parts = l1Line.Trim().Split(' ');
-                Thread.Sleep(10);
                 if (parts.Length > 1 && double.TryParse(parts[1], out double val))
                     l1Value = val; // save the number
-                Thread.Sleep(10);
             }
 
             if (l2Line != null)
             {
                 string[] parts = l2Line.Trim().Split(' ');
-                Thread.Sleep(10);
                 if (parts.Length > 1 && double.TryParse(parts[1], out double val))
                     l2Value = val;
-                Thread.Sleep(10);
             }
 
             if (decimaal.SelectedIndex == -1)
@@ -832,15 +868,15 @@ namespace scope_measurement_demo
                 String text3 = value3.ToString();
                 String text4 = value4.ToString();
                 SendKeys.SendWait(text1);
-                Thread.Sleep(100);
+                Thread.Sleep(80);
                 SendKeys.SendWait("{RIGHT}");
                 SendKeys.SendWait(text2);
-                Thread.Sleep(100);
+                Thread.Sleep(80);
                 SendKeys.SendWait("{RIGHT}");
                 SendKeys.SendWait(text3);
-                Thread.Sleep(100); Thread.Sleep(100);
+                Thread.Sleep(80); Thread.Sleep(100);
                 SendKeys.SendWait("{RIGHT}");
-                Thread.Sleep(100);
+                Thread.Sleep(80);
                 SendKeys.SendWait(text4);
 
             }
@@ -862,9 +898,9 @@ namespace scope_measurement_demo
                 String text1 = value1.ToString();
                 String text2 = value2.ToString();
                 SendKeys.SendWait(text1);
-                Thread.Sleep(100);
+                Thread.Sleep(80);
                 SendKeys.SendWait("{RIGHT}");
-                Thread.Sleep(100);
+                Thread.Sleep(80);
                 SendKeys.SendWait(text2);
             }
 
@@ -873,11 +909,11 @@ namespace scope_measurement_demo
                 String text1 = value1.ToString();
                 String text2 = value2.ToString();
                 SendKeys.SendWait(text1);
-                Thread.Sleep(100);
+                Thread.Sleep(80);
                 SendKeys.SendWait("{RIGHT}");
-                Thread.Sleep(100);
+                Thread.Sleep(80);
                 SendKeys.SendWait("{RIGHT}");
-                Thread.Sleep(100);
+                Thread.Sleep(80);
                 SendKeys.SendWait(text2);
             }
         }
@@ -889,6 +925,16 @@ namespace scope_measurement_demo
             Textfromserial.Clear();
             debugtextbox2.Clear();
             ConvertedData.Clear();
+            serialLineBuffer.Clear();
+            measurements.Clear();
+            l1Value = 0; l2Value = 0;   
+            incoming = string.Empty;
+            Statelb.Text = "Clear all text";
+        }
+
+        private void lblConnectionStatus_Click(object sender, EventArgs e)
+        {
+
         }
     }
 

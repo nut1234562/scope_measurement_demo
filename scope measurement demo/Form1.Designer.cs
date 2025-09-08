@@ -300,6 +300,7 @@
             lblConnectionStatus.Size = new Size(88, 17);
             lblConnectionStatus.TabIndex = 17;
             lblConnectionStatus.Text = "Not connected";
+            lblConnectionStatus.Click += lblConnectionStatus_Click;
             // 
             // Textfromserial
             // 
