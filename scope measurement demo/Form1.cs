@@ -5,6 +5,7 @@ using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace scope_measurement_demo
 {
 
@@ -15,7 +16,7 @@ namespace scope_measurement_demo
         List<double> rList = new List<double> { };
         List<double> dxList = new List<double> { };
         List<double> dyList = new List<double> { };
-        private List<string> serialLineBuffer = new List<string>();
+        private List<string> serialLineBuffer = new List<string>(128);
         List<Measurement> measurements = new List<Measurement>();
 
         double dx1 = 0, dx2 = 0, dx3 = 0, dy1 = 0, dy2 = 0, dy3 = 3, d = 0, r = 0, l1 = 0, l2 = 0, l3 = 0, l4 = 0, xc = 0, yc = 0, x = 0, y = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0; // ตัวเล็กใช้คำนวณและแสดงช่อง output
@@ -185,7 +186,7 @@ namespace scope_measurement_demo
             int md = Modelcb.SelectedIndex;
             int it = Itemcb.SelectedIndex;
             if (md == 0 || md == 3)//เลือกว่าปริ้นกี่บรรทัด โดยเลือกตาม model และ item
-                return 6;
+                return 9;
 
             else if (md == 1)//ถ้าปริ้น 7 บรรทัด
                 return 20;
@@ -227,7 +228,7 @@ namespace scope_measurement_demo
             else if (md == 11 && it == 0 || it == 1)
                 return 19;
 
-            return 6; // ค่าเริ่มต้น
+            return 8; // ค่าเริ่มต้น
 
         }
 
@@ -250,12 +251,8 @@ namespace scope_measurement_demo
                     serialPort.DataBits = int.Parse(cbdatabit.SelectedItem.ToString());
                     serialPort.StopBits = (StopBits)Enum.Parse(typeof(StopBits), cbstopbit.SelectedItem.ToString());
                     serialPort.Parity = (Parity)Enum.Parse(typeof(Parity), cbparitybit.SelectedItem.ToString());
-                    serialPort.DtrEnable = true;
-                    serialPort.RtsEnable = true;
                     serialPort.DataReceived += SerialPort_DataReceived; // attach event
                     serialPort.Open(); // open COM port
-                    serialPort.ErrorReceived += SerialPort_ErrorReceived;
-                    serialPort.PinChanged += SerialPort_PinChanged;
                     MessageBox.Show("Serial Port connected successfully!");
                     UpdateConnectionStatus(true);
                 }
@@ -272,50 +269,55 @@ namespace scope_measurement_demo
         }
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            try
-            {
-                incoming = serialPort.ReadLine();
-            }
-            catch (IOException)
-            {
-                BeginInvoke(new Action(() => UpdateConnectionStatus(false)));
-                return;
-            }
-            catch (InvalidOperationException)
-            {
-                BeginInvoke(new Action(() => UpdateConnectionStatus(false)));
-                return;
-            }
 
+            string incoming = serialPort.ReadExisting();
             this.Invoke(new MethodInvoker(() =>
+            {
+                string[] lines = incoming.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < lines.Length; i++)
                 {
-                    Textfromserial.AppendText(incoming + Environment.NewLine);
-                    Statelb.Text = "AppendText";
-                    serialTimeoutTimer.Stop();
-                    serialTimeoutTimer.Start();
-                    int expectedLines = GetExpectedLineCount();
-                    Statelb.Text = "Get expected line count";
-                    serialLineBuffer.Add(incoming);
-                    if (serialLineBuffer.Count == expectedLines)
-                    {
-                        ReceivedData.Clear();
-                        ReceivedData.Text = string.Join(Environment.NewLine, serialLineBuffer);
-                        Statelb.Text = "join string";
-                        Dataprocess();
-                        Statelb.Text = "Data process";
-                        serialLineBuffer.Clear();
-                    }
+                    // Skip empty lines
+                    if (string.IsNullOrWhiteSpace(lines[i]))
+                        continue;
 
-                }));
+                    // Merge '-1' and '-' if they appear consecutively
+                    if (lines[i] == "-1" && i + 1 < lines.Length && lines[i + 1] == "-")
+                    {
+                        string merged = "-1-";
+                        Textfromserial.AppendText(merged + Environment.NewLine);
+                        serialLineBuffer.Add(merged);
+                        i++; // Skip next line
+                    }
+                    else
+                    {
+                        Textfromserial.AppendText(lines[i] + Environment.NewLine);
+                        serialLineBuffer.Add(lines[i]);
+                    }
+                }
+                Statelb.Text = "AppendText";
+                serialTimeoutTimer.Stop();
+                serialTimeoutTimer.Start();
+                int expectedLines = GetExpectedLineCount();
+                Statelb.Text = "Get expected line count";
+                serialLineBuffer.Add(incoming);
+                if (serialLineBuffer.Count == expectedLines)
+                {
+                    ReceivedData.Clear();
+                    ReceivedData.Text = string.Join(Environment.NewLine, serialLineBuffer);
+                    Statelb.Text = "join string";
+                    Dataprocess();
+                    Statelb.Text = "Data process";
+                    serialLineBuffer.Clear();
+                }
+
+            }));
+
+
         }
 
         private void SerialTimeoutTimer_Tick(object sender, EventArgs e)
         {
             Textfromserial.Clear();
-            if (serialPort.IsOpen)
-            {
-                try { serialPort.Close(); } catch { }
-            }
             serialLineBuffer.Clear();
             ReceivedData.Clear();
             serialTimeoutTimer.Stop(); // Stop timer after clearing
@@ -325,37 +327,6 @@ namespace scope_measurement_demo
         {
             lblConnectionStatus.Text = isConnected ? "Connected" : "Disconnected";
             lblConnectionStatus.ForeColor = isConnected ? Color.Green : Color.Red;
-        }
-
-        private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
-        {
-            BeginInvoke(new Action(() =>
-            {
-                if (serialPort.IsOpen)
-                {
-                    try { serialPort.Close(); } catch { }
-                }
-                UpdateConnectionStatus(false);
-            }));
-        }
-
-        private void SerialPort_PinChanged(object sender, SerialPinChangedEventArgs e)
-        {
-            if (e.EventType == SerialPinChange.CDChanged ||
-                e.EventType == SerialPinChange.DsrChanged ||
-                e.EventType == SerialPinChange.CtsChanged ||
-                e.EventType == SerialPinChange.Break ||
-                e.EventType == SerialPinChange.Ring)
-            {
-                BeginInvoke(new Action(() =>
-                {
-                    if (serialPort.IsOpen)
-                    {
-                        try { serialPort.Close(); } catch { }
-                    }
-                    UpdateConnectionStatus(false);
-                }));
-            }
         }
 
         private void Disconnect_Click(object sender, EventArgs e)
@@ -857,16 +828,16 @@ namespace scope_measurement_demo
 
             if (key == 0)
             {
-                String text = value1.ToString();
+                string text = value1.ToString();
                 SendKeys.SendWait(text);
             }
 
             else if (key == 1)
             {
-                String text1 = value1.ToString();
-                String text2 = value2.ToString();
-                String text3 = value3.ToString();
-                String text4 = value4.ToString();
+                string text1 = value1.ToString();
+                string text2 = value2.ToString();
+                string text3 = value3.ToString();
+                string text4 = value4.ToString();
                 SendKeys.SendWait(text1);
                 Thread.Sleep(80);
                 SendKeys.SendWait("{RIGHT}");
@@ -883,9 +854,9 @@ namespace scope_measurement_demo
 
             else if (key == 2)
             {
-                String text1 = value1.ToString();
-                String text2 = value2.ToString();
-                String text3 = value3.ToString();
+                string text1 = value1.ToString();
+                string text2 = value2.ToString();
+                string text3 = value3.ToString();
                 SendKeys.SendWait(text1);
                 SendKeys.SendWait("{RIGHT}");
                 SendKeys.SendWait(text2);
@@ -895,8 +866,8 @@ namespace scope_measurement_demo
 
             else if (key == 3)
             {
-                String text1 = value1.ToString();
-                String text2 = value2.ToString();
+                string text1 = value1.ToString();
+                string text2 = value2.ToString();
                 SendKeys.SendWait(text1);
                 Thread.Sleep(80);
                 SendKeys.SendWait("{RIGHT}");
@@ -906,8 +877,8 @@ namespace scope_measurement_demo
 
             else if (key == 4)
             {
-                String text1 = value1.ToString();
-                String text2 = value2.ToString();
+                string text1 = value1.ToString();
+                string text2 = value2.ToString();
                 SendKeys.SendWait(text1);
                 Thread.Sleep(80);
                 SendKeys.SendWait("{RIGHT}");
