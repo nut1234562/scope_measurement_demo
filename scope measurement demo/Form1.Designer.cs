@@ -39,6 +39,7 @@
             label5 = new Label();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            Statelb = new Label();
             debugtextbox2 = new TextBox();
             debugtextbox = new TextBox();
             Itemcb = new ComboBox();
@@ -46,6 +47,7 @@
             testbt = new Button();
             button2 = new Button();
             tabPage2 = new TabPage();
+            lblConnectionStatus = new Label();
             Textfromserial = new TextBox();
             cbparitybit = new ComboBox();
             cbstopbit = new ComboBox();
@@ -97,7 +99,6 @@
             multiplier.Name = "multiplier";
             multiplier.Size = new Size(47, 23);
             multiplier.TabIndex = 3;
-            multiplier.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
             // decimaal
             // 
@@ -108,7 +109,6 @@
             decimaal.Name = "decimaal";
             decimaal.Size = new Size(68, 23);
             decimaal.TabIndex = 4;
-            decimaal.SelectedIndexChanged += decimaal_SelectedIndexChanged;
             // 
             // label1
             // 
@@ -169,6 +169,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(Statelb);
             tabPage1.Controls.Add(debugtextbox2);
             tabPage1.Controls.Add(debugtextbox);
             tabPage1.Controls.Add(Itemcb);
@@ -192,6 +193,15 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Printing";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // Statelb
+            // 
+            Statelb.AutoSize = true;
+            Statelb.Location = new Point(740, 50);
+            Statelb.Name = "Statelb";
+            Statelb.Size = new Size(33, 15);
+            Statelb.TabIndex = 18;
+            Statelb.Text = "State";
             // 
             // debugtextbox2
             // 
@@ -236,7 +246,7 @@
             testbt.Name = "testbt";
             testbt.Size = new Size(82, 22);
             testbt.TabIndex = 13;
-            testbt.Text = "test";
+            testbt.Text = "clear";
             testbt.UseVisualStyleBackColor = true;
             testbt.Click += testbt_Click;
             // 
@@ -252,6 +262,7 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(lblConnectionStatus);
             tabPage2.Controls.Add(Textfromserial);
             tabPage2.Controls.Add(cbparitybit);
             tabPage2.Controls.Add(cbstopbit);
@@ -278,6 +289,19 @@
             tabPage2.Text = "Port Settings";
             tabPage2.UseVisualStyleBackColor = true;
             // 
+            // lblConnectionStatus
+            // 
+            lblConnectionStatus.AutoSize = true;
+            lblConnectionStatus.BackColor = Color.White;
+            lblConnectionStatus.BorderStyle = BorderStyle.Fixed3D;
+            lblConnectionStatus.ForeColor = Color.Red;
+            lblConnectionStatus.Location = new Point(332, 124);
+            lblConnectionStatus.Name = "lblConnectionStatus";
+            lblConnectionStatus.Size = new Size(88, 17);
+            lblConnectionStatus.TabIndex = 17;
+            lblConnectionStatus.Text = "Not connected";
+            lblConnectionStatus.Click += lblConnectionStatus_Click;
+            // 
             // Textfromserial
             // 
             Textfromserial.Location = new Point(594, 84);
@@ -296,7 +320,6 @@
             cbparitybit.Name = "cbparitybit";
             cbparitybit.Size = new Size(133, 23);
             cbparitybit.TabIndex = 15;
-            cbparitybit.SelectedIndexChanged += cbparitybit_SelectedIndexChanged;
             // 
             // cbstopbit
             // 
@@ -398,7 +421,6 @@
             cbport.Name = "cbport";
             cbport.Size = new Size(133, 23);
             cbport.TabIndex = 5;
-            cbport.SelectedIndexChanged += cbport_SelectedIndexChanged;
             // 
             // label10
             // 
@@ -504,5 +526,7 @@
         private TextBox debugtextbox;
         private TextBox debugtextbox2;
         private TextBox Textfromserial;
+        private Label lblConnectionStatus;
+        private Label Statelb;
     }
 }
