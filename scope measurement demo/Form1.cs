@@ -349,345 +349,79 @@ namespace scope_measurement_demo
             {
                 debugtextbox.AppendText("each line " + line + Environment.NewLine);
             }
-            if (Modelcb.SelectedIndex == 0)//1st gear
-            {
-                ExtractMethod_0(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"L: {measurements[0].L}");
-                Keypress(0, measurements[0].L);
-            }
 
-            else if (Modelcb.SelectedIndex == 1)//VHB30
+            if (Dcheckbox.Checked == true)
             {
-                ExtractMethod_0(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"L: {measurements[0].L}\t L: {measurements[1].L}\t L: {measurements[2].L}");
-                Keypress(2, measurements[0].L, measurements[1].L, measurements[2].L);
+                DExtraction(lines);
             }
-
-            else if (Modelcb.SelectedIndex == 2 && Itemcb.SelectedIndex == 0)//Shaft
+            if (Lcheckbox.Checked == true)
             {
-                ExtractMethod_1(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"R: {measurements[0].R}\t R: {measurements[1].R}\t R: {measurements[2].R}\t R: {measurements[3].R}\t ");
-                Keypress(1, measurements[0].R, measurements[1].R, measurements[2].R, measurements[3].R);
+                LExtraction(lines);
             }
-
-            else if (Modelcb.SelectedIndex == 3)//lead screw
+            if (Rcheckbox.Checked == true)
             {
-                ExtractMethod_0(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"L: {measurements[0].L}");
-                Keypress(0, measurements[0].L);
+                RExtraction(lines);
             }
-
-            else if (Modelcb.SelectedIndex == 4)//14RA-20T-3-18-12-PPS-S
+            if(IAcheckbox.Checked == true)
             {
-                ExtractMethod_2(lines);
-                ConvertedData.Clear();
                 var (ia1, ia2, ia3) = ExtractMethod_2(lines);
-                ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3}\r\n");
-                Keypress(2, ia1, ia2, ia3);
-                ia1 = 0; ia2 = 0; ia3 = 0;
             }
-
-            else if (Modelcb.SelectedIndex == 5)//14RA-PM20TF80-2
-            {
-                if (Itemcb.SelectedIndex == 0)//OD3
-                {
-                    ExtractMethod_3(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"D: {measurements[0].D}\r\n");
-                    Keypress(0, measurements[0].D);
-
-                }
-                else if (Itemcb.SelectedIndex == 1)//Radius Of Stopper
-                {
-                    ExtractMethod_0(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[0].L}\r\n" +
-                                             $"L: {measurements[1].L}\r\n");
-                    Keypress(3, measurements[0].L, measurements[1].L);
-                }
-            }
-
-            else if (Modelcb.SelectedIndex == 6)//FG-Magnet
-            {
-                ExtractMethod_3(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"D: {measurements[0].D}\r\n");
-                Keypress(0, measurements[0].D);
-            }
-
-            else if (Modelcb.SelectedIndex == 7)//PM255
-            {
-                ExtractMethod_3(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"D: {measurements[0].D}\r\n" +
-                                         $"D: {measurements[1].D}\r\n");
-                Keypress(3, measurements[0].D, measurements[1].D);
-            }
-
-            else if (Modelcb.SelectedIndex == 8)//Se-Series
-            {
-                if (Itemcb.SelectedIndex == 0)//Concentric (Gate Side)
-                {
-                    ExtractMethod_0(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[3].L} " +
-                                             $"L: {measurements[4].L}");
-                    Keypress(3, measurements[3].L, measurements[4].L);
-                }
-
-                else if (Itemcb.SelectedIndex == 1)//Concentric (Ejector Side)
-                {
-                    ExtractMethod_0(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[3].L} " +
-                                             $"L: {measurements[4].L}");
-                    Keypress(3, measurements[3].L, measurements[4].L);
-                }
-
-                else if (Itemcb.SelectedIndex == 2)//Thickness(Gate side)
-                {
-                    ExtractMethod_0(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[0].L}" +
-                                             $"L: {measurements[1].L}" +
-                                             $"L: {measurements[2].L}" +
-                                             $"L: {measurements[3].L}");
-                    Keypress(1, measurements[0].L, measurements[1].L, measurements[2].L, measurements[3].L);
-                }
-
-                else if (Itemcb.SelectedIndex == 3)//Thickness(Ejector side)
-                {
-                    ExtractMethod_0(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[0].L}" +
-                                             $"L: {measurements[1].L}" +
-                                             $"L: {measurements[2].L}" +
-                                             $"L: {measurements[3].L}");
-                    Keypress(1, measurements[0].L, measurements[1].L, measurements[2].L, measurements[3].L);
-                }
-
-                else if (Itemcb.SelectedIndex == 4)// OD 1 & 2 (Gate)
-                {
-                    string inputText = ReceivedData.Text;
-                    string l1Line = inputText
-                    .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                    .FirstOrDefault(line => line.Trim().StartsWith("L1"));
-
-                    string l2Line = inputText
-                    .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                    .FirstOrDefault(line => line.Trim().StartsWith("L2"));
-
-                    ExtractMethod_4(l1Line, l2Line);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L1: {l1Value}\r\nL2: {l2Value}\r\n");
-                    Keypress(3, l1Value, l2Value);
-                }
-
-                else if (Itemcb.SelectedIndex == 5)// ID 1 & 2 (Gate)
-                {
-                    ExtractMethod_3(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"D: {measurements[0].D}\r\nD: {measurements[1].D}\r\n");
-                    Keypress(3, measurements[0].D, measurements[1].D);
-                }
-
-                else if (Itemcb.SelectedIndex == 6)//Concentric 1 & 2 (Gate Side)
-                {
-                    ExtractMethod_0(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[0].L}\r\nL: {measurements[1].L}\r\n");
-                    Keypress(3, measurements[0].L, measurements[1].L);
-                }
-
-                else if (Itemcb.SelectedIndex == 7)// OD 1 & 2 (Ejector Side)
-                {
-                    string inputText = ReceivedData.Text;
-                    string l1Line = inputText
-                    .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                    .FirstOrDefault(line => line.Trim().StartsWith("L1"));
-                    Statelb.Text = "String split";
-
-                    string l2Line = inputText
-                    .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                    .FirstOrDefault(line => line.Trim().StartsWith("L2"));
-                    Statelb.Text = "String split";
-
-                    ExtractMethod_4(l1Line, l2Line);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L1: {l1Value}\r\nL2: {l2Value}\r\n");
-                    Keypress(3, l1Value, l2Value);
-                    l1Value = 0; l2Value = 0;
-                    l1Line = null; l2Line = null;
-                }
-
-                else if (Itemcb.SelectedIndex == 8)// ID 1 & 2 (Ejector Side)
-                {
-                    ExtractMethod_3(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"D: {measurements[0].D}\r\nD: {measurements[1].D}\r\n");
-                    Keypress(3, measurements[0].D, measurements[1].D);
-                }
-
-                else if (Itemcb.SelectedIndex == 9)//Concentric 1 & 2 (Ejector Side)
-                {
-                    ExtractMethod_0(lines);
-                    ConvertedData.Clear();
-                    ConvertedData.AppendText($"L: {measurements[0].L}\r\nL: {measurements[1].L}\r\n");
-                    Keypress(3, measurements[0].L, measurements[1].L);
-                }
-            }
-
-            else if (Modelcb.SelectedIndex == 9)//LED-Exial-Fan
-            {
-                ExtractMethod_3(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"D: {measurements[0].D}\r\nD: {measurements[1].D}\r\nD: {measurements[2].D}");
-                Keypress(2, measurements[0].D, measurements[1].D, measurements[2].D);
-            }
-
-            else if (Modelcb.SelectedIndex == 10)//FAN MOTOR
-            {
-                ExtractMethod_3(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"D: {measurements[0].D}\r\n");
-                Keypress(0, measurements[0].D);
-            }
-
-            else if (Modelcb.SelectedIndex == 11)//BLOM70
-            {
-                ExtractMethod_3(lines);
-                ConvertedData.Clear();
-                if (Itemcb.SelectedIndex == 0)//OD, ID (Gate Side)
-                {
-                    ConvertedData.AppendText($"D: {measurements[0].D}\r\nD: {measurements[1].D}\r\n");
-                    Keypress(4, measurements[0].D, measurements[1].D);
-                }
-                else if (Itemcb.SelectedIndex == 1)//OD, ID (Ejector Side)
-                {
-                    ConvertedData.AppendText($"D: {measurements[0].D}\r\nD: {measurements[1].D}\r\n");
-                    Keypress(4, measurements[0].D, measurements[1].D);
-                }
-            }
-
         }
 
-        private void ExtractMethod_0(string[] lines)
+        private void DExtraction(string[] lines)
         {
-            Statelb.Text = "Extract";
-            for (int i = 0; i < lines.Length; i++)
+            Measurement currentMeasurement = new Measurement();
+            foreach (string line in lines)
             {
-                if (lines[i].Trim().StartsWith("N"))
+                if (line.Trim().StartsWith("D"))
                 {
-                    Measurement currentMeasurement = new Measurement();
-
-
-                    int linesToRead = 6;//ห่างจาก No.กี่บรรทัด บวกไปอีก 3
-                    for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
+                    var valueStr = line.Substring(1).Trim();
+                    if (double.TryParse(valueStr, out double dValue))
                     {
-                        string trimmedLine = lines[i + j].Trim();
-                        string[] parts = trimmedLine.Split(' ');
-                        if (parts.Length > 1)
-                        {
-                            if (trimmedLine.StartsWith("L"))
-                            {
-                                var valueStr = trimmedLine.Substring(1).Trim();
-                                if (double.TryParse(valueStr, out double lValue))
-                                {
-                                    currentMeasurement.L = lValue;
-                                    //ConvertedData.AppendText($"L: {currentMeasurement.L}");
-                                }
-                            }
-                        }
+                        currentMeasurement.D = dValue;
+                        measurements.Add(currentMeasurement);
+                        //ConvertedData.AppendText($"L: {currentMeasurement.L}");
                     }
-
-                    measurements.Add(currentMeasurement);
-                }
-            }
-
-            if (multiplier.SelectedIndex == 1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L *= 10;
-                }
-            }
-
-            if (decimaal.SelectedIndex == -1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L = Math.Round(measurement.L, 3);
-                }
-            }
-
-            else if (decimaal.SelectedIndex != -1)
-            {
-                int decimalPlaces = decimaal.SelectedIndex + 1;
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L = Math.Round(measurement.L, decimalPlaces);
                 }
             }
         }
 
-        private void ExtractMethod_1(string[] lines)
+        private void LExtraction(string[] lines)
         {
-            Statelb.Text = "Extract";
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (lines[i].Trim().StartsWith("N"))
-                {
-                    Measurement currentMeasurement = new Measurement();
 
-                    int linesToRead = 8;
-                    for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
+            Measurement currentMeasurement = new Measurement();
+            foreach (string line in lines)
+            {
+                if (line.Trim().StartsWith("L"))
+                {
+                    var valueStr = line.Substring(1).Trim();
+                    if (double.TryParse(valueStr, out double lValue))
                     {
-                        string trimmedLine = lines[i + j].Trim();
-                        string[] parts = trimmedLine.Split(' ');
-                        if (parts.Length > 1)
-                        {
-                            if (trimmedLine.StartsWith("R") && double.TryParse(parts[1], out double RValue))
-                            {
-                                currentMeasurement.R = RValue;
-                                debugtextbox2.AppendText($" R: {currentMeasurement.R}");
-                            }
-                        }
+                        currentMeasurement.L = lValue;
+                        measurements.Add(currentMeasurement);
+                        //ConvertedData.AppendText($"L: {currentMeasurement.L}");
                     }
-
-                    measurements.Add(currentMeasurement);
-                }
-            }
-
-            if (multiplier.SelectedIndex == 1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.R *= 10;
-                }
-            }
-
-            if (decimaal.SelectedIndex == -1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.R = Math.Round(measurement.R, 3);
-                }
-            }
-
-            else if (decimaal.SelectedIndex != -1)
-            {
-                int decimalPlaces = decimaal.SelectedIndex + 1;
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.R = Math.Round(measurement.R, decimalPlaces);
                 }
             }
         }
 
+        private void RExtraction(string[] lines)
+        {
+            Measurement currentMeasurement = new Measurement();
+            foreach (string line in lines)
+            {
+                if (line.Trim().StartsWith("R"))
+                {
+                    var valueStr = line.Substring(1).Trim();
+                    if (double.TryParse(valueStr, out double rValue))
+                    {
+                        currentMeasurement.R = rValue;
+                        measurements.Add(currentMeasurement);
+                        //ConvertedData.AppendText($"L: {currentMeasurement.L}");
+                    }
+                }
+            }
+        }
         private (double ia1, double ia2, double ia3) ExtractMethod_2(string[] lines)
         {
             Statelb.Text = "Extract";
@@ -733,85 +467,7 @@ namespace scope_measurement_demo
             return (ia1, ia2, ia3);
         }
 
-        private void ExtractMethod_3(string[] lines)
-        {
-            Statelb.Text = "Extract";
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (lines[i].Trim().StartsWith("N"))
-                {
-                    Measurement currentMeasurement = new Measurement();
 
-                    int linesToRead = 9;
-                    for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
-                    {
-                        string trimmedLine = lines[i + j].Trim();
-                        string[] parts = trimmedLine.Split(' ');
-                        if (parts.Length > 1)
-                        {
-                            if (trimmedLine.StartsWith("D") && double.TryParse(parts[1], out double DValue))
-                            {
-                                currentMeasurement.D = DValue;
-                            }
-                        }
-                    }
-                    measurements.Add(currentMeasurement);
-                }
-            }
-
-            if (decimaal.SelectedIndex == -1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.D = Math.Round(measurement.D, 3);
-                }
-            }
-
-            else if (decimaal.SelectedIndex != -1)
-            {
-                int decimalPlaces = decimaal.SelectedIndex + 1;
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.D = Math.Round(measurement.D, decimalPlaces);
-                }
-            }
-        }
-
-        private void ExtractMethod_4(string l1Line, string l2Line)
-        {
-            Statelb.Text = "Extract";
-            // 2) If found, split the line by spaces -> ["L1", "123.45"]
-            if (l1Line != null)
-            {
-                string[] parts = l1Line.Trim().Split(' ');
-                if (parts.Length > 1 && double.TryParse(parts[1], out double val))
-                    l1Value = val; // save the number
-            }
-
-            if (l2Line != null)
-            {
-                string[] parts = l2Line.Trim().Split(' ');
-                if (parts.Length > 1 && double.TryParse(parts[1], out double val))
-                    l2Value = val;
-            }
-
-            if (decimaal.SelectedIndex == -1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    l1Value = Math.Round(l1Value, 3);
-                }
-            }
-
-            else if (decimaal.SelectedIndex != -1)
-            {
-                int decimalPlaces = decimaal.SelectedIndex + 1;
-                foreach (Measurement measurement in measurements)
-                {
-                    l2Value = Math.Round(l2Value, decimalPlaces);
-                }
-            }
-        }
 
         private void Keypress(int key, double value1, double value2 = 0, double value3 = 0, double value4 = 0)
         {
@@ -898,12 +554,17 @@ namespace scope_measurement_demo
             ConvertedData.Clear();
             serialLineBuffer.Clear();
             measurements.Clear();
-            l1Value = 0; l2Value = 0;   
+            l1Value = 0; l2Value = 0;
             incoming = string.Empty;
             Statelb.Text = "Clear all text";
         }
 
         private void lblConnectionStatus_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void injectbt_Click(object sender, EventArgs e)
         {
 
         }
