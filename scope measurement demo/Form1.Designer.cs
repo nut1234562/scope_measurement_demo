@@ -39,15 +39,13 @@
             label5 = new Label();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
-            Lcheckbox = new CheckBox();
-            Dcheckbox = new CheckBox();
             Statelb = new Label();
             debugtextbox2 = new TextBox();
             debugtextbox = new TextBox();
             Itemcb = new ComboBox();
             Modelcb = new ComboBox();
             testbt = new Button();
-            injectbt = new Button();
+            button2 = new Button();
             tabPage2 = new TabPage();
             lblConnectionStatus = new Label();
             Textfromserial = new TextBox();
@@ -67,9 +65,6 @@
             label8 = new Label();
             label7 = new Label();
             label6 = new Label();
-            Rcheckbox = new CheckBox();
-            IAcheckbox = new CheckBox();
-            L1L2checkbox = new CheckBox();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -174,18 +169,13 @@
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(L1L2checkbox);
-            tabPage1.Controls.Add(IAcheckbox);
-            tabPage1.Controls.Add(Rcheckbox);
-            tabPage1.Controls.Add(Lcheckbox);
-            tabPage1.Controls.Add(Dcheckbox);
             tabPage1.Controls.Add(Statelb);
             tabPage1.Controls.Add(debugtextbox2);
             tabPage1.Controls.Add(debugtextbox);
             tabPage1.Controls.Add(Itemcb);
             tabPage1.Controls.Add(Modelcb);
             tabPage1.Controls.Add(testbt);
-            tabPage1.Controls.Add(injectbt);
+            tabPage1.Controls.Add(button2);
             tabPage1.Controls.Add(ConvertedData);
             tabPage1.Controls.Add(label5);
             tabPage1.Controls.Add(ReceivedData);
@@ -203,26 +193,6 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Printing";
             tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // Lcheckbox
-            // 
-            Lcheckbox.AutoSize = true;
-            Lcheckbox.Location = new Point(443, 205);
-            Lcheckbox.Name = "Lcheckbox";
-            Lcheckbox.Size = new Size(32, 19);
-            Lcheckbox.TabIndex = 22;
-            Lcheckbox.Text = "L";
-            Lcheckbox.UseVisualStyleBackColor = true;
-            // 
-            // Dcheckbox
-            // 
-            Dcheckbox.AutoSize = true;
-            Dcheckbox.Location = new Point(381, 205);
-            Dcheckbox.Name = "Dcheckbox";
-            Dcheckbox.Size = new Size(34, 19);
-            Dcheckbox.TabIndex = 21;
-            Dcheckbox.Text = "D";
-            Dcheckbox.UseVisualStyleBackColor = true;
             // 
             // Statelb
             // 
@@ -252,7 +222,7 @@
             // Itemcb
             // 
             Itemcb.FormattingEnabled = true;
-            Itemcb.Location = new Point(960, 81);
+            Itemcb.Location = new Point(486, 203);
             Itemcb.Margin = new Padding(3, 2, 3, 2);
             Itemcb.Name = "Itemcb";
             Itemcb.Size = new Size(133, 23);
@@ -262,7 +232,7 @@
             // 
             Modelcb.FormattingEnabled = true;
             Modelcb.Items.AddRange(new object[] { "1st gear", "VHB30", "Shaft", "Lead screw", "14RA-20T-3-18-12-PPS-S", "14RA-PM20TF80-2", "FG-Magnet", "PM25S", "SE-SERIE", "LED-EXAIL-FAN", "FAN Motor L09", "BLOM70" });
-            Modelcb.Location = new Point(809, 81);
+            Modelcb.Location = new Point(320, 203);
             Modelcb.Margin = new Padding(3, 2, 3, 2);
             Modelcb.Name = "Modelcb";
             Modelcb.Size = new Size(133, 23);
@@ -280,16 +250,15 @@
             testbt.UseVisualStyleBackColor = true;
             testbt.Click += testbt_Click;
             // 
-            // injectbt
+            // button2
             // 
-            injectbt.Location = new Point(346, 251);
-            injectbt.Margin = new Padding(3, 2, 3, 2);
-            injectbt.Name = "injectbt";
-            injectbt.Size = new Size(82, 22);
-            injectbt.TabIndex = 12;
-            injectbt.Text = "Inject";
-            injectbt.UseVisualStyleBackColor = true;
-            injectbt.Click += injectbt_Click;
+            button2.Location = new Point(346, 251);
+            button2.Margin = new Padding(3, 2, 3, 2);
+            button2.Name = "button2";
+            button2.Size = new Size(82, 22);
+            button2.TabIndex = 12;
+            button2.Text = "Print";
+            button2.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
@@ -502,36 +471,6 @@
             label6.TabIndex = 0;
             label6.Text = "Serial Port Settings";
             // 
-            // Rcheckbox
-            // 
-            Rcheckbox.AutoSize = true;
-            Rcheckbox.Location = new Point(507, 205);
-            Rcheckbox.Name = "Rcheckbox";
-            Rcheckbox.Size = new Size(33, 19);
-            Rcheckbox.TabIndex = 23;
-            Rcheckbox.Text = "R";
-            Rcheckbox.UseVisualStyleBackColor = true;
-            // 
-            // IAcheckbox
-            // 
-            IAcheckbox.AutoSize = true;
-            IAcheckbox.Location = new Point(570, 205);
-            IAcheckbox.Name = "IAcheckbox";
-            IAcheckbox.Size = new Size(37, 19);
-            IAcheckbox.TabIndex = 23;
-            IAcheckbox.Text = "IA";
-            IAcheckbox.UseVisualStyleBackColor = true;
-            // 
-            // L1L2checkbox
-            // 
-            L1L2checkbox.AutoSize = true;
-            L1L2checkbox.Location = new Point(644, 203);
-            L1L2checkbox.Name = "L1L2checkbox";
-            L1L2checkbox.Size = new Size(53, 19);
-            L1L2checkbox.TabIndex = 23;
-            L1L2checkbox.Text = "L1 L2";
-            L1L2checkbox.UseVisualStyleBackColor = true;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -581,7 +520,7 @@
         private Label label12;
         private Label label13;
         private Button testbt;
-        private Button injectbt;
+        private Button button2;
         private ComboBox Modelcb;
         private ComboBox Itemcb;
         private TextBox debugtextbox;
@@ -589,10 +528,5 @@
         private TextBox Textfromserial;
         private Label lblConnectionStatus;
         private Label Statelb;
-        private CheckBox Lcheckbox;
-        private CheckBox Dcheckbox;
-        private CheckBox Rcheckbox;
-        private CheckBox L1L2checkbox;
-        private CheckBox IAcheckbox;
     }
 }
