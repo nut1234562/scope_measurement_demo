@@ -282,35 +282,26 @@ namespace scope_measurement_demo
                     if (string.IsNullOrWhiteSpace(lines[i]))
                         continue;
 
+                    Textfromserial.AppendText(lines[i] + Environment.NewLine);
+                    serialLineBuffer.Add(lines[i]);
                     // Merge '-1' and '-' if they appear consecutively
-                    if (lines[i] == "-1" && i + 1 < lines.Length && lines[i + 1] == "-")
-                    {
-                        string merged = "-1-";
-                        Textfromserial.AppendText(merged + Environment.NewLine);
-                        serialLineBuffer.Add(merged);
-                        i++; // Skip next line
-                    }
-                    else
-                    {
-                        Textfromserial.AppendText(lines[i] + Environment.NewLine);
-                        serialLineBuffer.Add(lines[i]);
-                    }
+                    //if (lines[i] == "-1" && i + 1 < lines.Length && lines[i + 1] == "-")
+                    //{
+                    //    string merged = "-1-";
+                    //    Textfromserial.AppendText(merged + Environment.NewLine);
+                    //    serialLineBuffer.Add(merged);
+                    //    i++; // Skip next line
+                    //}
+                    //else
+                    //{
+                        
+                    //}
                 }
                 Statelb.Text = "AppendText";
                 serialTimeoutTimer.Stop();
                 serialTimeoutTimer.Start();
                 int expectedLines = GetExpectedLineCount();
                 Statelb.Text = "Get expected line count";
-                serialLineBuffer.Add(incoming);
-                if (serialLineBuffer.Count == expectedLines)
-                {
-                    ReceivedData.Clear();
-                    ReceivedData.Text = string.Join(Environment.NewLine, serialLineBuffer);
-                    Statelb.Text = "join string";
-                    Dataprocess();
-                    Statelb.Text = "Data process";
-                    serialLineBuffer.Clear();
-                }
 
             }));
 
