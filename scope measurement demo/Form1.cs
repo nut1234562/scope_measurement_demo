@@ -284,24 +284,11 @@ namespace scope_measurement_demo
 
                     Textfromserial.AppendText(lines[i] + Environment.NewLine);
                     serialLineBuffer.Add(lines[i]);
-                    // Merge '-1' and '-' if they appear consecutively
-                    //if (lines[i] == "-1" && i + 1 < lines.Length && lines[i + 1] == "-")
-                    //{
-                    //    string merged = "-1-";
-                    //    Textfromserial.AppendText(merged + Environment.NewLine);
-                    //    serialLineBuffer.Add(merged);
-                    //    i++; // Skip next line
-                    //}
-                    //else
-                    //{
-                        
-                    //}
                 }
                 Statelb.Text = "AppendText";
                 serialTimeoutTimer.Stop();
                 serialTimeoutTimer.Start();
-                int expectedLines = GetExpectedLineCount();
-                Statelb.Text = "Get expected line count";
+                Dataprocess();
 
             }));
 
@@ -364,10 +351,12 @@ namespace scope_measurement_demo
         private void DExtraction(string[] lines)
         {
             Measurement currentMeasurement = new Measurement();
+            Statelb.Text = "Measurement declaration";
             foreach (string line in lines)
             {
                 if (line.Trim().StartsWith("D"))
                 {
+                    Statelb.Text = "Line start with D";
                     var valueStr = line.Substring(1).Trim();
                     if (double.TryParse(valueStr, out double dValue))
                     {
