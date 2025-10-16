@@ -278,10 +278,6 @@ namespace scope_measurement_demo
                 string[] lines = incoming.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    // Skip empty lines
-                    if (string.IsNullOrWhiteSpace(lines[i]))
-                        continue;
-
                     Textfromserial.AppendText(lines[i] + Environment.NewLine);
                     serialLineBuffer.Add(lines[i]);
                 }

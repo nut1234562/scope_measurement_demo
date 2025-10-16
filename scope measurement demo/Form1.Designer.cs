@@ -39,6 +39,12 @@
             label5 = new Label();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            Injectwindowckb = new CheckBox();
+            L1L2checkbox = new CheckBox();
+            IAcheckbox = new CheckBox();
+            Rcheckbox = new CheckBox();
+            Lcheckbox = new CheckBox();
+            Dcheckbox = new CheckBox();
             Statelb = new Label();
             debugtextbox2 = new TextBox();
             debugtextbox = new TextBox();
@@ -65,12 +71,7 @@
             label8 = new Label();
             label7 = new Label();
             label6 = new Label();
-            Dcheckbox = new CheckBox();
-            Lcheckbox = new CheckBox();
-            Rcheckbox = new CheckBox();
-            IAcheckbox = new CheckBox();
-            L1L2checkbox = new CheckBox();
-            Injectwindowckb = new CheckBox();
+            Connect2 = new Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -175,6 +176,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(Connect2);
             tabPage1.Controls.Add(Injectwindowckb);
             tabPage1.Controls.Add(L1L2checkbox);
             tabPage1.Controls.Add(IAcheckbox);
@@ -205,6 +207,67 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Printing";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // Injectwindowckb
+            // 
+            Injectwindowckb.AutoSize = true;
+            Injectwindowckb.Location = new Point(594, 251);
+            Injectwindowckb.Name = "Injectwindowckb";
+            Injectwindowckb.Size = new Size(102, 19);
+            Injectwindowckb.TabIndex = 20;
+            Injectwindowckb.Text = "Inject Window";
+            Injectwindowckb.UseVisualStyleBackColor = true;
+            Injectwindowckb.CheckedChanged += Injectwindowckb_CheckedChanged;
+            // 
+            // L1L2checkbox
+            // 
+            L1L2checkbox.AutoSize = true;
+            L1L2checkbox.Location = new Point(560, 187);
+            L1L2checkbox.Name = "L1L2checkbox";
+            L1L2checkbox.Size = new Size(53, 19);
+            L1L2checkbox.TabIndex = 19;
+            L1L2checkbox.Text = "L1 L2";
+            L1L2checkbox.UseVisualStyleBackColor = true;
+            // 
+            // IAcheckbox
+            // 
+            IAcheckbox.AutoSize = true;
+            IAcheckbox.Location = new Point(507, 187);
+            IAcheckbox.Name = "IAcheckbox";
+            IAcheckbox.Size = new Size(37, 19);
+            IAcheckbox.TabIndex = 19;
+            IAcheckbox.Text = "IA";
+            IAcheckbox.UseVisualStyleBackColor = true;
+            // 
+            // Rcheckbox
+            // 
+            Rcheckbox.AutoSize = true;
+            Rcheckbox.Location = new Point(455, 187);
+            Rcheckbox.Name = "Rcheckbox";
+            Rcheckbox.Size = new Size(33, 19);
+            Rcheckbox.TabIndex = 19;
+            Rcheckbox.Text = "R";
+            Rcheckbox.UseVisualStyleBackColor = true;
+            // 
+            // Lcheckbox
+            // 
+            Lcheckbox.AutoSize = true;
+            Lcheckbox.Location = new Point(394, 187);
+            Lcheckbox.Name = "Lcheckbox";
+            Lcheckbox.Size = new Size(32, 19);
+            Lcheckbox.TabIndex = 19;
+            Lcheckbox.Text = "L";
+            Lcheckbox.UseVisualStyleBackColor = true;
+            // 
+            // Dcheckbox
+            // 
+            Dcheckbox.AutoSize = true;
+            Dcheckbox.Location = new Point(337, 187);
+            Dcheckbox.Name = "Dcheckbox";
+            Dcheckbox.Size = new Size(34, 19);
+            Dcheckbox.TabIndex = 19;
+            Dcheckbox.Text = "D";
+            Dcheckbox.UseVisualStyleBackColor = true;
             // 
             // Statelb
             // 
@@ -483,66 +546,15 @@
             label6.TabIndex = 0;
             label6.Text = "Serial Port Settings";
             // 
-            // Dcheckbox
+            // Connect2
             // 
-            Dcheckbox.AutoSize = true;
-            Dcheckbox.Location = new Point(337, 187);
-            Dcheckbox.Name = "Dcheckbox";
-            Dcheckbox.Size = new Size(34, 19);
-            Dcheckbox.TabIndex = 19;
-            Dcheckbox.Text = "D";
-            Dcheckbox.UseVisualStyleBackColor = true;
-            // 
-            // Lcheckbox
-            // 
-            Lcheckbox.AutoSize = true;
-            Lcheckbox.Location = new Point(394, 187);
-            Lcheckbox.Name = "Lcheckbox";
-            Lcheckbox.Size = new Size(32, 19);
-            Lcheckbox.TabIndex = 19;
-            Lcheckbox.Text = "L";
-            Lcheckbox.UseVisualStyleBackColor = true;
-            // 
-            // Rcheckbox
-            // 
-            Rcheckbox.AutoSize = true;
-            Rcheckbox.Location = new Point(455, 187);
-            Rcheckbox.Name = "Rcheckbox";
-            Rcheckbox.Size = new Size(33, 19);
-            Rcheckbox.TabIndex = 19;
-            Rcheckbox.Text = "R";
-            Rcheckbox.UseVisualStyleBackColor = true;
-            // 
-            // IAcheckbox
-            // 
-            IAcheckbox.AutoSize = true;
-            IAcheckbox.Location = new Point(507, 187);
-            IAcheckbox.Name = "IAcheckbox";
-            IAcheckbox.Size = new Size(37, 19);
-            IAcheckbox.TabIndex = 19;
-            IAcheckbox.Text = "IA";
-            IAcheckbox.UseVisualStyleBackColor = true;
-            // 
-            // L1L2checkbox
-            // 
-            L1L2checkbox.AutoSize = true;
-            L1L2checkbox.Location = new Point(560, 187);
-            L1L2checkbox.Name = "L1L2checkbox";
-            L1L2checkbox.Size = new Size(53, 19);
-            L1L2checkbox.TabIndex = 19;
-            L1L2checkbox.Text = "L1 L2";
-            L1L2checkbox.UseVisualStyleBackColor = true;
-            // 
-            // Injectwindowckb
-            // 
-            Injectwindowckb.AutoSize = true;
-            Injectwindowckb.Location = new Point(594, 251);
-            Injectwindowckb.Name = "Injectwindowckb";
-            Injectwindowckb.Size = new Size(102, 19);
-            Injectwindowckb.TabIndex = 20;
-            Injectwindowckb.Text = "Inject Window";
-            Injectwindowckb.UseVisualStyleBackColor = true;
-            Injectwindowckb.CheckedChanged += Injectwindowckb_CheckedChanged;
+            Connect2.Location = new Point(594, 333);
+            Connect2.Name = "Connect2";
+            Connect2.Size = new Size(75, 23);
+            Connect2.TabIndex = 21;
+            Connect2.Text = "Connect2";
+            Connect2.UseVisualStyleBackColor = true;
+            Connect2.Click += Connect_Click;
             // 
             // Form1
             // 
@@ -607,5 +619,6 @@
         private CheckBox Dcheckbox;
         private CheckBox L1L2checkbox;
         private CheckBox Injectwindowckb;
+        private Button Connect2;
     }
 }
