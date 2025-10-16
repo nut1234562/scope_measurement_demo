@@ -42,7 +42,7 @@
             IAUpDown = new DomainUpDown();
             Serial2Connect = new Button();
             Serial2cb = new ComboBox();
-            button2 = new Button();
+            disconnect = new Button();
             SuspendLayout();
             // 
             // DinjectCK
@@ -213,23 +213,24 @@
             Serial2cb.Size = new Size(121, 23);
             Serial2cb.TabIndex = 5;
             // 
-            // button2
+            // disconnect
             // 
-            button2.BackColor = Color.Red;
-            button2.ForeColor = Color.Red;
-            button2.Location = new Point(370, 380);
-            button2.Name = "button2";
-            button2.Size = new Size(75, 23);
-            button2.TabIndex = 7;
-            button2.Text = "button2";
-            button2.UseVisualStyleBackColor = false;
+            disconnect.BackColor = Color.Red;
+            disconnect.ForeColor = Color.Red;
+            disconnect.Location = new Point(370, 380);
+            disconnect.Name = "disconnect";
+            disconnect.Size = new Size(75, 23);
+            disconnect.TabIndex = 7;
+            disconnect.Text = "button2";
+            disconnect.UseVisualStyleBackColor = false;
+            disconnect.Click += disconnect_Click;
             // 
             // Inject_form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(button2);
+            Controls.Add(disconnect);
             Controls.Add(Serial2cb);
             Controls.Add(Serial2Connect);
             Controls.Add(IAUpDown);
@@ -266,6 +267,6 @@
         private DomainUpDown IAUpDown;
         private Button Serial2Connect;
         private ComboBox Serial2cb;
-        private Button button2;
+        private Button disconnect;
     }
 }
