@@ -41,6 +41,8 @@
             L12UpDown = new DomainUpDown();
             IAUpDown = new DomainUpDown();
             Serial2Connect = new Button();
+            Serial2cb = new ComboBox();
+            button2 = new Button();
             SuspendLayout();
             // 
             // DinjectCK
@@ -193,19 +195,42 @@
             // 
             // Serial2Connect
             // 
-            Serial2Connect.Location = new Point(569, 268);
+            Serial2Connect.BackColor = Color.Lime;
+            Serial2Connect.ForeColor = Color.Lime;
+            Serial2Connect.Location = new Point(459, 380);
             Serial2Connect.Name = "Serial2Connect";
             Serial2Connect.Size = new Size(75, 23);
             Serial2Connect.TabIndex = 4;
             Serial2Connect.Text = "Connect";
-            Serial2Connect.UseVisualStyleBackColor = true;
+            Serial2Connect.UseVisualStyleBackColor = false;
             Serial2Connect.Click += Serial2Connect_Click;
+            // 
+            // Serial2cb
+            // 
+            Serial2cb.FormattingEnabled = true;
+            Serial2cb.Location = new Point(370, 348);
+            Serial2cb.Name = "Serial2cb";
+            Serial2cb.Size = new Size(121, 23);
+            Serial2cb.TabIndex = 5;
+            // 
+            // button2
+            // 
+            button2.BackColor = Color.Red;
+            button2.ForeColor = Color.Red;
+            button2.Location = new Point(370, 380);
+            button2.Name = "button2";
+            button2.Size = new Size(75, 23);
+            button2.TabIndex = 7;
+            button2.Text = "button2";
+            button2.UseVisualStyleBackColor = false;
             // 
             // Inject_form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(button2);
+            Controls.Add(Serial2cb);
             Controls.Add(Serial2Connect);
             Controls.Add(IAUpDown);
             Controls.Add(L12UpDown);
@@ -240,5 +265,7 @@
         private DomainUpDown L12UpDown;
         private DomainUpDown IAUpDown;
         private Button Serial2Connect;
+        private ComboBox Serial2cb;
+        private Button button2;
     }
 }

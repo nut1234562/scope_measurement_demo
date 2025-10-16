@@ -18,6 +18,10 @@ namespace scope_measurement_demo
         public Inject_form()
         {
             InitializeComponent();
+            foreach (var port in SerialPort.GetPortNames())
+            {
+                Serial2cb.Items.Add(port); // เพิ่มชื่อ port ทีละตัว
+            }
 
             DinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
             L1L2injectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
@@ -30,7 +34,7 @@ namespace scope_measurement_demo
             RUpDown.SelectedItem = RUpDown.Items[0];
             L12UpDown.SelectedItem = L12UpDown.Items[0];
             IAUpDown.SelectedItem = IAUpDown.Items[0];
-            
+
 
         }
 
@@ -88,7 +92,11 @@ namespace scope_measurement_demo
                     for (int i = 0; i < n; i++)
                         injectList.Add("No.2\r\nIntersection(Line-Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43");
                 }
+
             }
+            string joined = string.Join("\r\n", injectList);
+            InjectShowtb.AppendText(joined);
+            serial2.Write(joined);
         }
 
         private void RinjectCK_CheckedChanged(object sender, EventArgs e)
@@ -117,7 +125,7 @@ namespace scope_measurement_demo
             try
             {
                 serial2 = new SerialPort(); // assign to class-level variable
-                serial2.PortName = "COM11";
+                serial2.PortName = Serial2cb.SelectedItem.ToString(); ;
                 serial2.BaudRate = 9600;
                 serial2.DataBits = 8;
                 serial2.StopBits = StopBits.One;
@@ -153,4 +161,5 @@ namespace scope_measurement_demo
                 }));
             }
         }
+    }
 }

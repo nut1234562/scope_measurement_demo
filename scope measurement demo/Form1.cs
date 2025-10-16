@@ -233,6 +233,7 @@ namespace scope_measurement_demo
 
         }
 
+
         private void Connect_Click(object sender, EventArgs e)
         {
             if (!serialPort.IsOpen)
