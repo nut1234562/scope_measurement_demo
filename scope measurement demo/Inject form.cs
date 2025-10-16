@@ -26,7 +26,7 @@ namespace scope_measurement_demo
             DinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
             L1L2injectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
             LinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
-            RinjectCK.CheckedChanged += new EventHandler(RinjectCK_CheckedChanged);
+            RinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
             IAinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
 
             DUpDown.SelectedItem = DUpDown.Items[0];
@@ -99,21 +99,21 @@ namespace scope_measurement_demo
             serial2.Write(joined);
         }
 
-        private void RinjectCK_CheckedChanged(object sender, EventArgs e)
-        {
-            CheckBox cb = sender as CheckBox;
+        //private void RinjectCK_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    CheckBox cb = sender as CheckBox;
 
-            if (cb.Checked)
-            {
-                // Add to list if checked
-                checkOrder.Add(cb);
-            }
-            else
-            {
-                // Remove if unchecked
-                checkOrder.Remove(cb);
-            }
-        }
+        //    if (cb.Checked)
+        //    {
+        //        // Add to list if checked
+        //        checkOrder.Add(cb);
+        //    }
+        //    else
+        //    {
+        //        // Remove if unchecked
+        //        checkOrder.Remove(cb);
+        //    }
+        //}
 
         private void domainUpDown1_SelectedItemChanged(object sender, EventArgs e)
         {
