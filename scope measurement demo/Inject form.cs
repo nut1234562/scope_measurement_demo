@@ -46,12 +46,12 @@ namespace scope_measurement_demo
             if (cb.Checked)
             {
                 checkOrder.Add(cb);
-                InjectShowtb.Text = string.Join(" -> ", checkOrder.Select(c => c.Text));
+                InjectOrdertb.Text = string.Join(" -> ", checkOrder.Select(c => c.Text));
             }
             else
             {
                 checkOrder.Remove(cb);
-                InjectShowtb.Text = string.Join(" -> ", checkOrder.Select(c => c.Text));
+                InjectOrdertb.Text = string.Join(" -> ", checkOrder.Select(c => c.Text));
             }
         }
 

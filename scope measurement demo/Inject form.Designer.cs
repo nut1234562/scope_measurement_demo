@@ -43,6 +43,7 @@
             Serial2Connect = new Button();
             Serial2cb = new ComboBox();
             disconnect = new Button();
+            InjectOrdertb = new TextBox();
             SuspendLayout();
             // 
             // DinjectCK
@@ -225,11 +226,20 @@
             disconnect.UseVisualStyleBackColor = false;
             disconnect.Click += disconnect_Click;
             // 
+            // InjectOrdertb
+            // 
+            InjectOrdertb.Location = new Point(606, 363);
+            InjectOrdertb.Multiline = true;
+            InjectOrdertb.Name = "InjectOrdertb";
+            InjectOrdertb.Size = new Size(137, 23);
+            InjectOrdertb.TabIndex = 8;
+            // 
             // Inject_form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(InjectOrdertb);
             Controls.Add(disconnect);
             Controls.Add(Serial2cb);
             Controls.Add(Serial2Connect);
@@ -268,5 +278,6 @@
         private Button Serial2Connect;
         private ComboBox Serial2cb;
         private Button disconnect;
+        private TextBox InjectOrdertb;
     }
 }

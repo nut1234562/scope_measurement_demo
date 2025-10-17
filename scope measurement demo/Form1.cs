@@ -278,39 +278,13 @@ namespace scope_measurement_demo
                 string[] lines = incoming.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    // Skip empty lines
-                    if (string.IsNullOrWhiteSpace(lines[i]))
-                        continue;
-
-                    // Merge '-1' and '-' if they appear consecutively
-                    if (lines[i] == "-1" && i + 1 < lines.Length && lines[i + 1] == "-")
-                    {
-                        string merged = "-1-";
-                        Textfromserial.AppendText(merged + Environment.NewLine);
-                        serialLineBuffer.Add(merged);
-                        i++; // Skip next line
-                    }
-                    else
-                    {
-                        Textfromserial.AppendText(lines[i] + Environment.NewLine);
-                        serialLineBuffer.Add(lines[i]);
-                    }
+                    Textfromserial.AppendText(lines[i] + Environment.NewLine);
+                    serialLineBuffer.Add(lines[i]);
                 }
                 Statelb.Text = "AppendText";
                 serialTimeoutTimer.Stop();
                 serialTimeoutTimer.Start();
-                int expectedLines = GetExpectedLineCount();
-                Statelb.Text = "Get expected line count";
-                serialLineBuffer.Add(incoming);
-                if (serialLineBuffer.Count == expectedLines)
-                {
-                    ReceivedData.Clear();
-                    ReceivedData.Text = string.Join(Environment.NewLine, serialLineBuffer);
-                    Statelb.Text = "join string";
-                    Dataprocess();
-                    Statelb.Text = "Data process";
-                    serialLineBuffer.Clear();
-                }
+                Dataprocess();
 
             }));
 
@@ -373,10 +347,12 @@ namespace scope_measurement_demo
         private void DExtraction(string[] lines)
         {
             Measurement currentMeasurement = new Measurement();
+            Statelb.Text = "Measurement declaration";
             foreach (string line in lines)
             {
                 if (line.Trim().StartsWith("D"))
                 {
+                    Statelb.Text = "Line start with D";
                     var valueStr = line.Substring(1).Trim();
                     if (double.TryParse(valueStr, out double dValue))
                     {
