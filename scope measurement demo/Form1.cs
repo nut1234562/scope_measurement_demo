@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Globalization;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -212,32 +213,65 @@ namespace scope_measurement_demo
 
         private void DExtraction(string[] lines)
         {
-            int index = 0;
-            Measurement currentMeasurement = new Measurement();
-            Statelb.Text = "Measurement declaration";
-            foreach (string line in lines)
-            {
-                if (line.Trim().StartsWith("LS"))
-                {
-                    int n = 0;
-                    if (lines[index + 3].Trim().StartsWith("D"))
-                    {
-                        Statelb.Text = "Line start with D";
-                        var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length > 1 && double.TryParse(parts[1], out double dValue))
-                        {
-                            currentMeasurement.D = dValue;
-                            measurements.Add(currentMeasurement);
-                            foreach (Measurement measurement in measurements)
-                            {
-                                ConvertedData.AppendText($"D: {measurements[0].D}\t");
-                                n++;
-                            }
+            Statelb.Text = "Extract D";
+            int n = 0;
+            bool inDMeasurement = false;
 
-                        }
-                    }
+            foreach (string rawLine in lines)
+            {
+                string line = rawLine.Trim();
+
+                if (string.IsNullOrEmpty(line))
+                {
+                    continue;
                 }
-                index++;
+
+                if (line.StartsWith("No.", StringComparison.OrdinalIgnoreCase))
+                {
+                    inDMeasurement = false;
+                    continue;
+                }
+
+                if (line.Contains("Circle(Multi)", StringComparison.OrdinalIgnoreCase))
+                {
+                    inDMeasurement = true;
+                    continue;
+                }
+
+                if (line.StartsWith("Circle", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Distance", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Rectangle", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Intersection", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!line.Contains("Circle(Multi)", StringComparison.OrdinalIgnoreCase))
+                    {
+                        inDMeasurement = false;
+                    }
+
+                    continue;
+                }
+
+                if (!inDMeasurement || !line.StartsWith("D", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1 &&
+                    double.TryParse(parts[1], NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double dValue))
+                {
+                    if (measurements.Count > n)
+                    {
+                        measurements[n].D = dValue;
+                    }
+                    else
+                    {
+                        measurements.Add(new Measurement { D = dValue });
+                    }
+
+                    ConvertedData.AppendText($"D: {dValue}\t");
+                    n++;
+                }
             }
         }
 
