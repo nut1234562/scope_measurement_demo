@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO.Ports;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO.Ports;
+using static System.Windows.Forms.DataFormats;
 
 namespace scope_measurement_demo
 {
@@ -18,26 +20,13 @@ namespace scope_measurement_demo
         public Inject_form()
         {
             InitializeComponent();
+            this.FormClosing += Inject_form_FormClosing;
+
             foreach (var port in SerialPort.GetPortNames())
             {
                 Serial2cb.Items.Add(port); // เพิ่มชื่อ port ทีละตัว
             }
-
-            DinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
-            L1L2injectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
-            LinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
-            RinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
-            IAinjectCK.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
-
-            DUpDown.SelectedItem = DUpDown.Items[0];
-            LUpDown.SelectedItem = LUpDown.Items[0];
-            RUpDown.SelectedItem = RUpDown.Items[0];
-            L12UpDown.SelectedItem = L12UpDown.Items[0];
-            IAUpDown.SelectedItem = IAUpDown.Items[0];
-
-
         }
-
 
         private void checkBox_CheckedChanged(object sender, EventArgs e)
         {
@@ -58,43 +47,14 @@ namespace scope_measurement_demo
 
         private void Inject_Click(object sender, EventArgs e)
         {
+            InjectShowtb.Clear();
             List<string> injectList = new List<string>();
-            foreach (var cb in checkOrder)
-            {
-                string key = cb.Text;  // "D", "L", "R", "L1 L2", or "IA"
 
-                int repeat = 0;
-                if (key == "D") repeat = DUpDown.SelectedItem != null ? int.Parse(DUpDown.SelectedItem.ToString()) : 0;
-                else if (key == "L") repeat = LUpDown.SelectedItem != null ? int.Parse(LUpDown.SelectedItem.ToString()) : 0;
-                else if (key == "R") repeat = RUpDown.SelectedItem != null ? int.Parse(RUpDown.SelectedItem.ToString()) : 0;
-                else if (key == "L1 L2") repeat = L12UpDown.SelectedItem != null ? int.Parse(L12UpDown.SelectedItem.ToString()) : 0;
-                else if (key == "IA") repeat = IAUpDown.SelectedItem != null ? int.Parse(IAUpDown.SelectedItem.ToString()) : 0;
-
-                for (int i = 0; i < repeat; i++)
-                {
-                    if (key == "D")
-                    {
-                        injectList.Add("No.1\r\n\r\nCircle(Multi) 4/4\r\n-1-\r\n  LS\r\n  Xc 0.401\r\n  Yc 2.790\r\n  D 4.499\r\n  R 2.249");
-                    }
-                    else if (key == "L")
-                    {
-                        injectList.Add("No.1\r\nDistance(Point‑Point) 2/2\r\n-1-\r\n  L 1.501\r\n  dx 1.502\r\n  dY 0.001\r\n");
-                    }
-                    else if (key == "R")
-                    {
-                        injectList.Add("No.1\r\n\r\nCircle 3/3\r\n-1-\r\n  Xc -3.546\r\n  Yc 3.331\r\n  D 0.579\r\n  R 0.289\r\n");
-                    }
-                    else if (key == "L1 L2")
-                    {
-                        injectList.Add("No.1\r\nRectangle 5/5\r\n-1-\r\n  X 22.506\r\n  Y 28.186\r\n  L1 9.013\r\n  L2 9.014");
-                    }
-                    else if (key == "IA")
-                    {
-                        injectList.Add("No.2\r\nIntersection(Line‑Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43");
-                    }
-                }
-
-            }
+            AddMeasurement(injectList, DUpdown, "No.1\r\n\r\nCircle(Multi) 4/4\r\n-1-\r\n  LS\r\n  Xc 0.401\r\n  Yc 2.790\r\n  D 4.499\r\n  R 2.249");
+            AddMeasurement(injectList, LUpdown, "No.1\r\nDistance(Point‑Point) 2/2\r\n-1-\r\n  L 1.501\r\n  dx 1.502\r\n  dY 0.001\r\n");
+            AddMeasurement(injectList, RUpdown, "No.1\r\n\r\nCircle 3/3\r\n-1-\r\n  Xc -3.546\r\n  Yc 3.331\r\n  D 0.579\r\n  R 0.289\r\n");
+            AddMeasurement(injectList, L1L2Updown, "No.1\r\nRectangle 5/5\r\n-1-\r\n  X 22.506\r\n  Y 28.186\r\n  L1 9.013\r\n  L2 9.014");
+            AddMeasurement(injectList, IAUpdown, "No.2\r\nIntersection(Line‑Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43");
 
             if (injectList.Count == 0)
             {
@@ -102,7 +62,7 @@ namespace scope_measurement_demo
                 return;
             }
 
-            string payload = string.Join("\r\n", injectList);
+            string payload = string.Join(Environment.NewLine, injectList);
             InjectShowtb.AppendText(payload + Environment.NewLine);
 
             if (serial2 != null && serial2.IsOpen)
@@ -115,46 +75,43 @@ namespace scope_measurement_demo
             }
         }
 
-        //private void RinjectCK_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    CheckBox cb = sender as CheckBox;
-
-        //    if (cb.Checked)
-        //    {
-        //        // Add to list if checked
-        //        checkOrder.Add(cb);
-        //    }
-        //    else
-        //    {
-        //        // Remove if unchecked
-        //        checkOrder.Remove(cb);
-        //    }
-        //}
-
-        private void domainUpDown1_SelectedItemChanged(object sender, EventArgs e)
+        private void AddMeasurement(List<string> injectList, NumericUpDown upDown, string message)
         {
+            int repeat = (int)upDown.Value;
 
+            for (int i = 0; i < repeat; i++)
+            {
+                injectList.Add(message);
+            }
         }
 
         private void Serial2Connect_Click(object sender, EventArgs e)
         {
             if (!serial2.IsOpen)
             {
-                try
+                if (Serial2cb.SelectedItem == null)
                 {
-                    serial2 = new SerialPort(); // assign to class-level variable
-                    serial2.PortName = Serial2cb.SelectedItem.ToString(); ;
-                    serial2.BaudRate = 9600;
-                    serial2.DataBits = 8;
-                    serial2.StopBits = StopBits.One;
-                    serial2.Parity = Parity.None;
-                    serial2.DataReceived += SerialPort_DataReceived; // attach event
-                    serial2.Open(); // open COM port
-                    MessageBox.Show("Serial Port connected successfully!");
+                    MessageBox.Show("Please select a serial port.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show($"Error connecting to Serial Port: {ex.Message}");
+                    try
+                    {
+                        serial2 = new SerialPort(); // assign to class-level variable
+                        serial2.PortName = "COM10";//Serial2cb.SelectedItem.ToString();
+                        serial2.BaudRate = 9600;
+                        serial2.DataBits = 8;
+                        serial2.StopBits = StopBits.One;
+                        serial2.Parity = Parity.None;
+                        serial2.DataReceived += SerialPort_DataReceived; // attach event
+                        serial2.Open(); // open COM port
+                        MessageBox.Show("Serial Port connected successfully!");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error connecting to Serial Port: {ex.Message}");
+                    }
                 }
             }
             else
@@ -193,6 +150,20 @@ namespace scope_measurement_demo
                 MessageBox.Show("Serial Port disconnected!");
             }
             else MessageBox.Show("Serial Port is not open.");
+        }
+
+        private void Clearbt2_Click(object sender, EventArgs e)
+        {
+            InjectShowtb.Clear();
+        }
+
+        private void Inject_form_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (serial2.IsOpen)
+            {
+                serial2.Close();
+            }
+            //Injectwindowckb.Checked = false;
         }
     }
 }

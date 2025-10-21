@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Globalization;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,14 +14,14 @@ namespace scope_measurement_demo
 
     public partial class Form1 : Form
     {
-        List<double> lList = new List<double> { };
-        List<double> rList = new List<double> { };
-        List<double> dxList = new List<double> { };
-        List<double> dyList = new List<double> { };
+        //List<double> lList = new List<double> { };
+        //List<double> rList = new List<double> { };
+        //List<double> dxList = new List<double> { };
+        //List<double> dyList = new List<double> { };
         private List<string> serialLineBuffer = new List<string>(128);
         List<Measurement> measurements = new List<Measurement>();
 
-        double dx1 = 0, dx2 = 0, dx3 = 0, dy1 = 0, dy2 = 0, dy3 = 3, d = 0, r = 0, l1 = 0, l2 = 0, l3 = 0, l4 = 0, xc = 0, yc = 0, x = 0, y = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0; // ตัวเล็กใช้คำนวณและแสดงช่อง output
+        //double dx1 = 0, dx2 = 0, dx3 = 0, dy1 = 0, dy2 = 0, dy3 = 3, d = 0, r = 0, l1 = 0, l2 = 0, l3 = 0, l4 = 0, xc = 0, yc = 0, x = 0, y = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0; // ตัวเล็กใช้คำนวณและแสดงช่อง output
         double[] variables;
         double DX1 = 0, DX2 = 0, DX3 = 0, DY3 = 0, DY1 = 0, DY2 = 0, D = 0, R = 0, L1 = 0, L2 = 0, L3 = 0, L4 = 0, XC = 0, YC = 0, X = 0, Y = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0;  // ตัวใหญ่ใช้แสดงผลบน UI
         double l1Value = 0, l2Value = 0;
@@ -40,6 +41,7 @@ namespace scope_measurement_demo
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
 
+
         public Form1()
         {
             InitializeComponent();
@@ -53,7 +55,7 @@ namespace scope_measurement_demo
 
             // In your constructor or Form1_Load
             serialTimeoutTimer = new System.Windows.Forms.Timer();
-            serialTimeoutTimer.Interval = 6000; // 2 seconds
+            serialTimeoutTimer.Interval = 2000; // 2 seconds
             serialTimeoutTimer.Tick += SerialTimeoutTimer_Tick;
 
             cbport.SelectedIndex = 0;
@@ -74,98 +76,6 @@ namespace scope_measurement_demo
         {
 
         }
-
-        private void Modelcb_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-            if (Modelcb.SelectedIndex == 0)//1st gear
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("Base Tangent Length");
-                Itemcb.Items.Add("Outer Diameter");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 1)//VHB30
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("Width Of Stopper");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 2)//Shaft
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("Radius 1 - 4");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 3)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("OD Lead Screw 1");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 4)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("Stopper Angle IA1 - IA3");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 5)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("OD3");
-                Itemcb.Items.Add("Radius Of Stopper");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 6)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("Outer Diameter (OD2)");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 7)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("Outer Diameter (OD1) (Gate side and Ejector side)");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 8)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("Concentric (Gate Side)");
-                Itemcb.Items.Add("Concentric (Ejector Side)");
-                Itemcb.Items.Add("Thickness (Gate Side)");
-                Itemcb.Items.Add("Thickness (Ejector Side)");
-                Itemcb.Items.Add("OD 1 & 2 (Gate)");
-                Itemcb.Items.Add("ID 1 & 2 (Gate)");
-                Itemcb.Items.Add("Concentric 1 & 2 (Gate Side)");
-                Itemcb.Items.Add("OD 1 & 2 (Ejector Side)");
-                Itemcb.Items.Add("ID 1 & 2 (Ejector Side)");
-                Itemcb.Items.Add("Concentric 1 2 (Ejector Side)");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 9)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("OD and ID (Gate side and Ejector side)");
-                Itemcb.SelectedIndex = 0;
-
-            }
-            else if (Modelcb.SelectedIndex == 10)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("OD1");
-                Itemcb.SelectedIndex = 0;
-            }
-            else if (Modelcb.SelectedIndex == 11)
-            {
-                Itemcb.Items.Clear();
-                Itemcb.Items.Add("OD, ID (Gate Side)");
-                Itemcb.Items.Add("OD, ID (Ejector Side)");
-                Itemcb.SelectedIndex = 0;
-
-            }
-
-        }
         // Replace the Refresh_Click method with the following code
         private void Refresh_Click(object sender, EventArgs e)
         {
@@ -181,58 +91,6 @@ namespace scope_measurement_demo
 
             MessageBox.Show("Refresh Comport สำเร็จ", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-
-        private int GetExpectedLineCount()
-        {
-            int md = Modelcb.SelectedIndex;
-            int it = Itemcb.SelectedIndex;
-            if (md == 0 || md == 3)//เลือกว่าปริ้นกี่บรรทัด โดยเลือกตาม model และ item
-                return 9;
-
-            else if (md == 1)//ถ้าปริ้น 7 บรรทัด
-                return 20;
-
-            else if (md == 4 & it == 0)
-                return 5;
-
-            else if (md == 2)
-                return 35;
-
-            else if (md == 5 && it == 0 || md == 6 || md == 10)
-
-                return 9;
-
-            else if (md == 5 && it == 1)
-                return 13;
-
-            else if (md == 7 || md == 8 && it == 8)
-                return 19;
-
-            else if (md == 8 && it == 0 || md == 8 && it == 1)
-                return 41;
-
-            else if (md == 8 && it == 2 || it == 3)
-                return 27;
-
-            else if (md == 8 && it == 4 || it == 7)
-                return 7;
-
-            else if (md == 8 && it == 5)
-                return 19;
-
-            else if (md == 8 && it == 6 || md == 8 && it == 9)
-                return 13;
-
-            else if (md == 9)
-                return 29;
-
-            else if (md == 11 && it == 0 || it == 1)
-                return 19;
-
-            return 8; // ค่าเริ่มต้น
-
-        }
-
 
         private void Connect_Click(object sender, EventArgs e)
         {
@@ -271,10 +129,11 @@ namespace scope_measurement_demo
         }
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-
             string incoming = serialPort.ReadExisting();
             this.Invoke(new MethodInvoker(() =>
             {
+                ReceivedData.Clear();
+                ConvertedData.Clear();
                 string[] lines = incoming.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
                 for (int i = 0; i < lines.Length; i++)
                 {
@@ -284,8 +143,7 @@ namespace scope_measurement_demo
                 Statelb.Text = "AppendText";
                 serialTimeoutTimer.Stop();
                 serialTimeoutTimer.Start();
-                Dataprocess();
-
+               
             }));
 
 
@@ -293,9 +151,10 @@ namespace scope_measurement_demo
 
         private void SerialTimeoutTimer_Tick(object sender, EventArgs e)
         {
+            ReceivedData.Text += string.Join(Environment.NewLine, serialLineBuffer) + Environment.NewLine;
+            Dataprocess();
             Textfromserial.Clear();
             serialLineBuffer.Clear();
-            ReceivedData.Clear();
             serialTimeoutTimer.Stop(); // Stop timer after clearing
         }
 
@@ -326,85 +185,221 @@ namespace scope_measurement_demo
                 debugtextbox.AppendText("each line " + line + Environment.NewLine);
             }
 
-            if (Dcheckbox.Checked == true)
+            if(DCheckbox.Checked)
             {
                 DExtraction(lines);
             }
-            if (Lcheckbox.Checked == true)
+            if(LCheckbox.Checked)
             {
                 LExtraction(lines);
             }
-            if (Rcheckbox.Checked == true)
+            if(RCheckbox.Checked)
             {
                 RExtraction(lines);
             }
-            if (IAcheckbox.Checked == true)
+            if(L1L2Checkbox.Checked)
             {
-                var (ia1, ia2, ia3) = ExtractMethod_2(lines);
+                L1L2Extraction(lines);
             }
+            if(IACheckbox.Checked)
+            {
+                var (ia1, ia2, ia3) = IAExtraction(lines);
+                ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3}\t");
+                //Keypress(1, ia1, ia2, ia3);
+            }
+
         }
 
         private void DExtraction(string[] lines)
         {
-            Measurement currentMeasurement = new Measurement();
-            Statelb.Text = "Measurement declaration";
-            foreach (string line in lines)
+            Statelb.Text = "Extract D";
+            int n = 0;
+            bool inDMeasurement = false;
+
+            foreach (string rawLine in lines)
             {
-                if (line.Trim().StartsWith("D"))
+                string line = rawLine.Trim();
+
+                if (string.IsNullOrEmpty(line))
                 {
-                    Statelb.Text = "Line start with D";
-                    var valueStr = line.Substring(1).Trim();
-                    if (double.TryParse(valueStr, out double dValue))
+                    continue;
+                }
+
+                if (line.StartsWith("No.", StringComparison.OrdinalIgnoreCase))
+                {
+                    inDMeasurement = false;
+                    continue;
+                }
+
+                if (IsCircleMultiMeasurementHeader(line))
+                {
+                    inDMeasurement = true;
+                    continue;
+                }
+
+                if (IsCircleStandardMeasurementHeader(line))
+                {
+                    inDMeasurement = false;
+                    continue;
+                }
+
+                if (line.StartsWith("Circle", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Distance", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Rectangle", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Intersection", StringComparison.OrdinalIgnoreCase))
+                {
+                    inDMeasurement = false;
+                    continue;
+                }
+
+                if (!inDMeasurement || !line.StartsWith("D", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1 &&
+                    double.TryParse(parts[1], NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double dValue))
+                {
+                    if (measurements.Count > n)
                     {
-                        int n = 0;
-                        currentMeasurement.D = dValue;
-                        measurements.Add(currentMeasurement);
-                        foreach (Measurement measurement in measurements)
-                        {
-                            ConvertedData.AppendText($"D: {measurements[n].D}");
-                            n++;
-                        }
-                        
+                        measurements[n].D = dValue;
                     }
+                    else
+                    {
+                        measurements.Add(new Measurement { D = dValue });
+                    }
+
+                    ConvertedData.AppendText($"D: {dValue}\t");
+                    n++;
                 }
             }
         }
 
         private void LExtraction(string[] lines)
         {
-
+            int n = 0;
             Measurement currentMeasurement = new Measurement();
             foreach (string line in lines)
             {
                 if (line.Trim().StartsWith("L"))
                 {
-                    var valueStr = line.Substring(1).Trim();
-                    if (double.TryParse(valueStr, out double lValue))
+                    var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 1 && double.TryParse(parts[1], out double lValue))
                     {
-                        currentMeasurement.L = lValue;
-                        measurements.Add(currentMeasurement);
-                        //ConvertedData.AppendText($"L: {currentMeasurement.L}");
+                        if (measurements.Count > n)
+                        {
+                            measurements[n].L = lValue;
+                        }
+                        else
+                        {
+                            measurements.Add(new Measurement { L = lValue });
+                        }
+
+                        ConvertedData.AppendText($"L: {lValue}\t");
+                        n++;
                     }
                 }
             }
         }
 
+
         private void RExtraction(string[] lines)
         {
-            Measurement currentMeasurement = new Measurement();
-            foreach (string line in lines)
+            int measurementIndex = 0;
+            bool inDMeasurement = false;
+
+            foreach (string rawLine in lines)
             {
-                if (line.Trim().StartsWith("R"))
+                string line = rawLine.Trim();
+
+                if (string.IsNullOrEmpty(line))
                 {
-                    var valueStr = line.Substring(1).Trim();
-                    if (double.TryParse(valueStr, out double rValue))
+                    continue;
+                }
+
+                if (line.StartsWith("No.", StringComparison.OrdinalIgnoreCase))
+                {
+                    inDMeasurement = false;
+                    continue;
+                }
+
+                if (IsCircleStandardMeasurementHeader(line))
+                {
+                    inDMeasurement = true;
+                    continue;
+                }
+
+                if (IsCircleMultiMeasurementHeader(line))
+                {
+                    inDMeasurement = false;
+                    continue;
+                }
+
+                if (line.StartsWith("Circle", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Distance", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Rectangle", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Intersection", StringComparison.OrdinalIgnoreCase))
+                {
+                    inDMeasurement = false;
+                    continue;
+                }
+
+                if (!inDMeasurement || !line.StartsWith("R", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1 &&
+                    double.TryParse(parts[1], NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double rValue))
+                {
+                    if (measurements.Count > measurementIndex)
                     {
-                        currentMeasurement.R = rValue;
-                        measurements.Add(currentMeasurement);
-                        //ConvertedData.AppendText($"L: {currentMeasurement.L}");
+                        measurements[measurementIndex].R = rValue;
                     }
+                    else
+                    {
+                        measurements.Add(new Measurement { R = rValue });
+                    }
+
+                    ConvertedData.AppendText($"R: {rValue}\t");
+                    measurementIndex++;
                 }
             }
+        }
+
+        private static bool IsCircleMeasurementHeader(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+            {
+                return false;
+            }
+
+            if (!line.StartsWith("Circle", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (line.Length == "Circle".Length)
+            {
+                return true;
+            }
+
+            char nextChar = line["Circle".Length];
+            return char.IsWhiteSpace(nextChar) || nextChar == '(' || nextChar == ':' || nextChar == '-';
+        }
+
+        private static bool IsCircleMultiMeasurementHeader(string line)
+        {
+            return IsCircleMeasurementHeader(line) &&
+                   line.IndexOf("(Multi", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool IsCircleStandardMeasurementHeader(string line)
+        {
+            return IsCircleMeasurementHeader(line) &&
+                   line.IndexOf("(Multi", StringComparison.OrdinalIgnoreCase) < 0;
         }
 
         private void L1L2Extraction(string[] lines)
@@ -419,73 +414,11 @@ namespace scope_measurement_demo
             .FirstOrDefault(line => line.Trim().StartsWith("L2"));
 
             ExtractMethod_4(l1Line, l2Line);
-            ConvertedData.Clear();
-            ConvertedData.AppendText($"L1: {l1Value}\r\nL2: {l2Value}\r\n");
-            Keypress(3, l1Value, l2Value);
+            ConvertedData.AppendText($"L1: {l1Value}\tL2: {l2Value}\t");
+            //Keypress(3, l1Value, l2Value);
         }
 
-
-        private void ExtractMethod_0(string[] lines)
-        {
-            Statelb.Text = "Extract";
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (lines[i].Trim().StartsWith("N"))
-                {
-                    Measurement currentMeasurement = new Measurement();
-
-
-                    int linesToRead = 6;//ห่างจาก No.กี่บรรทัด บวกไปอีก 3
-                    for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
-                    {
-                        string trimmedLine = lines[i + j].Trim();
-                        string[] parts = trimmedLine.Split(' ');
-                        if (parts.Length > 1)
-                        {
-                            if (trimmedLine.StartsWith("L"))
-                            {
-                                var valueStr = trimmedLine.Substring(1).Trim();
-                                if (double.TryParse(valueStr, out double lValue))
-                                {
-                                    currentMeasurement.L = lValue;
-                                    //ConvertedData.AppendText($"L: {currentMeasurement.L}");
-                                }
-                            }
-                        }
-                    }
-
-                    measurements.Add(currentMeasurement);
-                }
-            }
-
-            if (multiplier.SelectedIndex == 1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L *= 10;
-                }
-            }
-
-            if (decimaal.SelectedIndex == -1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L = Math.Round(measurement.L, 3);
-                }
-            }
-
-            else if (decimaal.SelectedIndex != -1)
-            {
-                int decimalPlaces = decimaal.SelectedIndex + 1;
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L = Math.Round(measurement.L, decimalPlaces);
-                }
-            }
-        }
-
-
-        private (double ia1, double ia2, double ia3) ExtractMethod_2(string[] lines)
+        private (double ia1, double ia2, double ia3) IAExtraction(string[] lines)
         {
             Statelb.Text = "Extract";
             string iaLine = lines.FirstOrDefault(line => line.Trim().StartsWith("IA"));
@@ -681,6 +614,11 @@ namespace scope_measurement_demo
                     }
                 }
             }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 
