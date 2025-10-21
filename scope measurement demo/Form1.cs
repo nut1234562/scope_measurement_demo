@@ -414,71 +414,9 @@ namespace scope_measurement_demo
             .FirstOrDefault(line => line.Trim().StartsWith("L2"));
 
             ExtractMethod_4(l1Line, l2Line);
-            ConvertedData.Clear();
-            ConvertedData.AppendText($"L1: {l1Value}\r\nL2: {l2Value}\r\n");
+            ConvertedData.AppendText($"L1: {l1Value}\tL2: {l2Value}\t");
             //Keypress(3, l1Value, l2Value);
         }
-
-
-        private void ExtractMethod_0(string[] lines)
-        {
-            Statelb.Text = "Extract";
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (lines[i].Trim().StartsWith("N"))
-                {
-                    Measurement currentMeasurement = new Measurement();
-
-
-                    int linesToRead = 6;//ห่างจาก No.กี่บรรทัด บวกไปอีก 3
-                    for (int j = 0; j < linesToRead && i + j < lines.Length; j++)
-                    {
-                        string trimmedLine = lines[i + j].Trim();
-                        string[] parts = trimmedLine.Split(' ');
-                        if (parts.Length > 1)
-                        {
-                            if (trimmedLine.StartsWith("L"))
-                            {
-                                var valueStr = trimmedLine.Substring(1).Trim();
-                                if (double.TryParse(valueStr, out double lValue))
-                                {
-                                    currentMeasurement.L = lValue;
-                                    //ConvertedData.AppendText($"L: {currentMeasurement.L}");
-                                }
-                            }
-                        }
-                    }
-
-                    measurements.Add(currentMeasurement);
-                }
-            }
-
-            if (multiplier.SelectedIndex == 1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L *= 10;
-                }
-            }
-
-            if (decimaal.SelectedIndex == -1)
-            {
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L = Math.Round(measurement.L, 3);
-                }
-            }
-
-            else if (decimaal.SelectedIndex != -1)
-            {
-                int decimalPlaces = decimaal.SelectedIndex + 1;
-                foreach (Measurement measurement in measurements)
-                {
-                    measurement.L = Math.Round(measurement.L, decimalPlaces);
-                }
-            }
-        }
-
 
         private (double ia1, double ia2, double ia3) IAExtraction(string[] lines)
         {
