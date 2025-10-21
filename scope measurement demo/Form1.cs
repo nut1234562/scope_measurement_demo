@@ -20,7 +20,7 @@ namespace scope_measurement_demo
         private List<string> serialLineBuffer = new List<string>(128);
         List<Measurement> measurements = new List<Measurement>();
 
-        double dx1 = 0, dx2 = 0, dx3 = 0, dy1 = 0, dy2 = 0, dy3 = 3, d = 0, r = 0, l1 = 0, l2 = 0, l3 = 0, l4 = 0, xc = 0, yc = 0, x = 0, y = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0; // ตัวเล็กใช้คำนวณและแสดงช่อง output
+        //double dx1 = 0, dx2 = 0, dx3 = 0, dy1 = 0, dy2 = 0, dy3 = 3, d = 0, r = 0, l1 = 0, l2 = 0, l3 = 0, l4 = 0, xc = 0, yc = 0, x = 0, y = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0; // ตัวเล็กใช้คำนวณและแสดงช่อง output
         double[] variables;
         double DX1 = 0, DX2 = 0, DX3 = 0, DY3 = 0, DY1 = 0, DY2 = 0, D = 0, R = 0, L1 = 0, L2 = 0, L3 = 0, L4 = 0, XC = 0, YC = 0, X = 0, Y = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0;  // ตัวใหญ่ใช้แสดงผลบน UI
         double l1Value = 0, l2Value = 0;
@@ -210,34 +210,6 @@ namespace scope_measurement_demo
 
         }
 
-        private string InputDetetion(string[] lines)
-        {
-            foreach (string line in lines)
-            {
-                if (line.Trim().StartsWith("D"))
-                {
-                    return "D";
-                }
-                else if (line.Trim().StartsWith("L"))
-                {
-                    return "L";
-                }
-                else if (line.Trim().StartsWith("R"))
-                {
-                    return "R";
-                }
-                else if (line.Trim().StartsWith("L1") || line.Trim().StartsWith("L2"))
-                {
-                    return "L1L2";
-                }
-                else if (line.Trim().StartsWith("IA"))
-                {
-                    return "IA";
-                }
-            }
-            return null;
-        }
-
         private void DExtraction(string[] lines)
         {
             int index = 0;
@@ -280,8 +252,7 @@ namespace scope_measurement_demo
                     var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length > 1 && double.TryParse(parts[1], out double lValue))
                     {
-                        currentMeasurement.L = lValue;
-                        measurements.Add(currentMeasurement);
+                        measurements[n].L = lValue;
                         ConvertedData.AppendText($"L: {measurements[n].L}\t");
                         n++;
                     }
@@ -300,9 +271,7 @@ namespace scope_measurement_demo
                     var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length > 1 && double.TryParse(parts[1], out double rValue))
                     {
-                        Measurement currentMeasurement = new Measurement();
-                        currentMeasurement.R = rValue;
-                        measurements.Add(currentMeasurement);
+                        measurements[n].R = rValue;
                         ConvertedData.AppendText($"R: {measurements[n].R}\t");
                         n++;
                     }
