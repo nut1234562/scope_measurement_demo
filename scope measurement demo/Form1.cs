@@ -304,27 +304,68 @@ namespace scope_measurement_demo
 
         private void RExtraction(string[] lines)
         {
-            int n = 0;
-            //Measurement currentMeasurement = new Measurement();
-            foreach (string line in lines)
-            {
-                if (line.Trim().StartsWith("R"))
-                {
-                    var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length > 1 && double.TryParse(parts[1], out double rValue))
-                    {
-                        if (measurements.Count > n)
-                        {
-                            measurements[n].R = rValue;
-                        }
-                        else
-                        {
-                            measurements.Add(new Measurement { R = rValue });
-                        }
+            int measurementIndex = 0;
+            bool inDMeasurement = false;
 
-                        ConvertedData.AppendText($"R: {rValue}\t");
-                        n++;
+            // Radius readings (`R ...`) are only meaningful when they belong to the same
+            // "Circle(Multi)" measurement group as the diameter (`D ...`) values.  The parser
+            // therefore tracks whether the current line is inside such a group and ignores any
+            // stray radius lines that appear in other contexts (for example, rectangle or
+            // distance measurements).
+            foreach (string rawLine in lines)
+            {
+                string line = rawLine.Trim();
+
+                if (string.IsNullOrEmpty(line))
+                {
+                    continue;
+                }
+
+                if (line.StartsWith("No.", StringComparison.OrdinalIgnoreCase))
+                {
+                    inDMeasurement = false;
+                    continue;
+                }
+
+                if (line.Contains("Circle(Multi)", StringComparison.OrdinalIgnoreCase))
+                {
+                    inDMeasurement = true;
+                    continue;
+                }
+
+                if (line.StartsWith("Circle", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Distance", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Rectangle", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Intersection", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!line.Contains("Circle(Multi)", StringComparison.OrdinalIgnoreCase))
+                    {
+                        inDMeasurement = false;
                     }
+
+                    continue;
+                }
+
+                if (!inDMeasurement || !line.StartsWith("R", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1 &&
+                    double.TryParse(parts[1], NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double rValue))
+                {
+                    if (measurements.Count > measurementIndex)
+                    {
+                        measurements[measurementIndex].R = rValue;
+                    }
+                    else
+                    {
+                        measurements.Add(new Measurement { R = rValue });
+                    }
+
+                    ConvertedData.AppendText($"R: {rValue}\t");
+                    measurementIndex++;
                 }
             }
         }
