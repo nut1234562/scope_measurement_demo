@@ -231,9 +231,15 @@ namespace scope_measurement_demo
                     continue;
                 }
 
-                if (IsCircleMeasurementHeader(line))
+                if (IsCircleMultiMeasurementHeader(line))
                 {
                     inDMeasurement = true;
+                    continue;
+                }
+
+                if (IsCircleStandardMeasurementHeader(line))
+                {
+                    inDMeasurement = false;
                     continue;
                 }
 
@@ -318,9 +324,15 @@ namespace scope_measurement_demo
                     continue;
                 }
 
-                if (IsCircleMeasurementHeader(line))
+                if (IsCircleStandardMeasurementHeader(line))
                 {
                     inDMeasurement = true;
+                    continue;
+                }
+
+                if (IsCircleMultiMeasurementHeader(line))
+                {
+                    inDMeasurement = false;
                     continue;
                 }
 
@@ -376,6 +388,18 @@ namespace scope_measurement_demo
 
             char nextChar = line["Circle".Length];
             return char.IsWhiteSpace(nextChar) || nextChar == '(' || nextChar == ':' || nextChar == '-';
+        }
+
+        private static bool IsCircleMultiMeasurementHeader(string line)
+        {
+            return IsCircleMeasurementHeader(line) &&
+                   line.IndexOf("(Multi", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool IsCircleStandardMeasurementHeader(string line)
+        {
+            return IsCircleMeasurementHeader(line) &&
+                   line.IndexOf("(Multi", StringComparison.OrdinalIgnoreCase) < 0;
         }
 
         private void L1L2Extraction(string[] lines)
