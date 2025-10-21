@@ -48,35 +48,18 @@ namespace scope_measurement_demo
         private void Inject_Click(object sender, EventArgs e)
         {
             InjectShowtb.Clear();
+            List<string> injectList = new List<string>();
 
-            var measurements = new (NumericUpDown Control, string Payload)[]
-            {
-                (DUpdown, "No.1\r\n\r\nCircle(Multi) 4/4\r\n-1-\r\n  LS\r\n  Xc 0.401\r\n  Yc 2.790\r\n  D 4.499\r\n  R 2.249"),
-                (LUpdown, "No.1\r\nDistance(Point‑Point) 2/2\r\n-1-\r\n  L 1.501\r\n  dx 1.502\r\n  dY 0.001\r\n"),
-                (RUpdown, "No.1\r\n\r\nCircle 3/3\r\n-1-\r\n  Xc -3.546\r\n  Yc 3.331\r\n  D 0.579\r\n  R 0.289\r\n"),
-                (IAUpdown, "No.1\r\nRectangle 5/5\r\n-1-\r\n  X 22.506\r\n  Y 28.186\r\n  L1 9.013\r\n  L2 9.014"),
-                (L1L2Updown, "No.2\r\nIntersection(Line‑Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43")
-            };
+            AddMeasurement(injectList, DUpdown, "No.1\r\n\r\nCircle(Multi) 4/4\r\n-1-\r\n  LS\r\n  Xc 0.401\r\n  Yc 2.790\r\n  D 4.499\r\n  R 2.249");
+            AddMeasurement(injectList, LUpdown, "No.1\r\nDistance(Point‑Point) 2/2\r\n-1-\r\n  L 1.501\r\n  dx 1.502\r\n  dY 0.001\r\n");
+            AddMeasurement(injectList, RUpdown, "No.1\r\n\r\nCircle 3/3\r\n-1-\r\n  Xc -3.546\r\n  Yc 3.331\r\n  D 0.579\r\n  R 0.289\r\n");
+            AddMeasurement(injectList, IAUpdown, "No.1\r\nRectangle 5/5\r\n-1-\r\n  X 22.506\r\n  Y 28.186\r\n  L1 9.013\r\n  L2 9.014");
+            AddMeasurement(injectList, L1L2Updown, "No.2\r\nIntersection(Line‑Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43");
 
-            int maxRepeat = measurements.Max(m => Decimal.ToInt32(m.Control.Value));
-
-            if (maxRepeat == 0)
+            if (injectList.Count == 0)
             {
                 MessageBox.Show("Select a measurement and amount before injecting.");
                 return;
-            }
-
-            List<string> injectList = new List<string>(maxRepeat * measurements.Length);
-
-            for (int i = 0; i < maxRepeat; i++)
-            {
-                foreach (var measurement in measurements)
-                {
-                    if (measurement.Control.Value > i)
-                    {
-                        injectList.Add(measurement.Payload);
-                    }
-                }
             }
 
             string payload = string.Join(Environment.NewLine, injectList);
@@ -89,6 +72,16 @@ namespace scope_measurement_demo
             else
             {
                 MessageBox.Show("Serial port is not connected. Click Connect before injecting.");
+            }
+        }
+
+        private void AddMeasurement(List<string> injectList, NumericUpDown upDown, string message)
+        {
+            int repeat = (int)upDown.Value;
+
+            for (int i = 0; i < repeat; i++)
+            {
+                injectList.Add(message);
             }
         }
 
