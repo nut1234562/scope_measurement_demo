@@ -231,7 +231,7 @@ namespace scope_measurement_demo
                     continue;
                 }
 
-                if (line.Contains("Circle(Multi)", StringComparison.OrdinalIgnoreCase))
+                if (IsCircleMeasurementHeader(line))
                 {
                     inDMeasurement = true;
                     continue;
@@ -242,11 +242,7 @@ namespace scope_measurement_demo
                     line.StartsWith("Rectangle", StringComparison.OrdinalIgnoreCase) ||
                     line.StartsWith("Intersection", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!line.Contains("Circle(Multi)", StringComparison.OrdinalIgnoreCase))
-                    {
-                        inDMeasurement = false;
-                    }
-
+                    inDMeasurement = false;
                     continue;
                 }
 
@@ -307,11 +303,6 @@ namespace scope_measurement_demo
             int measurementIndex = 0;
             bool inDMeasurement = false;
 
-            // Radius readings (`R ...`) are only meaningful when they belong to the same
-            // "Circle(Multi)" measurement group as the diameter (`D ...`) values.  The parser
-            // therefore tracks whether the current line is inside such a group and ignores any
-            // stray radius lines that appear in other contexts (for example, rectangle or
-            // distance measurements).
             foreach (string rawLine in lines)
             {
                 string line = rawLine.Trim();
@@ -327,7 +318,7 @@ namespace scope_measurement_demo
                     continue;
                 }
 
-                if (line.Contains("Circle(Multi)", StringComparison.OrdinalIgnoreCase))
+                if (IsCircleMeasurementHeader(line))
                 {
                     inDMeasurement = true;
                     continue;
@@ -338,11 +329,7 @@ namespace scope_measurement_demo
                     line.StartsWith("Rectangle", StringComparison.OrdinalIgnoreCase) ||
                     line.StartsWith("Intersection", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!line.Contains("Circle(Multi)", StringComparison.OrdinalIgnoreCase))
-                    {
-                        inDMeasurement = false;
-                    }
-
+                    inDMeasurement = false;
                     continue;
                 }
 
@@ -368,6 +355,27 @@ namespace scope_measurement_demo
                     measurementIndex++;
                 }
             }
+        }
+
+        private static bool IsCircleMeasurementHeader(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+            {
+                return false;
+            }
+
+            if (!line.StartsWith("Circle", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (line.Length == "Circle".Length)
+            {
+                return true;
+            }
+
+            char nextChar = line["Circle".Length];
+            return char.IsWhiteSpace(nextChar) || nextChar == '(' || nextChar == ':' || nextChar == '-';
         }
 
         private void L1L2Extraction(string[] lines)
