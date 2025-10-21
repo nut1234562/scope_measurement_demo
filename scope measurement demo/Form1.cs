@@ -13,10 +13,10 @@ namespace scope_measurement_demo
 
     public partial class Form1 : Form
     {
-        List<double> lList = new List<double> { };
-        List<double> rList = new List<double> { };
-        List<double> dxList = new List<double> { };
-        List<double> dyList = new List<double> { };
+        //List<double> lList = new List<double> { };
+        //List<double> rList = new List<double> { };
+        //List<double> dxList = new List<double> { };
+        //List<double> dyList = new List<double> { };
         private List<string> serialLineBuffer = new List<string>(128);
         List<Measurement> measurements = new List<Measurement>();
 
@@ -252,13 +252,22 @@ namespace scope_measurement_demo
                     var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length > 1 && double.TryParse(parts[1], out double lValue))
                     {
-                        measurements[n].L = lValue;
-                        ConvertedData.AppendText($"L: {measurements[n].L}\t");
+                        if (measurements.Count > n)
+                        {
+                            measurements[n].L = lValue;
+                        }
+                        else
+                        {
+                            measurements.Add(new Measurement { L = lValue });
+                        }
+
+                        ConvertedData.AppendText($"L: {lValue}\t");
                         n++;
                     }
                 }
             }
         }
+
 
         private void RExtraction(string[] lines)
         {
@@ -271,8 +280,16 @@ namespace scope_measurement_demo
                     var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length > 1 && double.TryParse(parts[1], out double rValue))
                     {
-                        measurements[n].R = rValue;
-                        ConvertedData.AppendText($"R: {measurements[n].R}\t");
+                        if (measurements.Count > n)
+                        {
+                            measurements[n].R = rValue;
+                        }
+                        else
+                        {
+                            measurements.Add(new Measurement { R = rValue });
+                        }
+
+                        ConvertedData.AppendText($"R: {rValue}\t");
                         n++;
                     }
                 }

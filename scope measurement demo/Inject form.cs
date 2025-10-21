@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -46,37 +47,66 @@ namespace scope_measurement_demo
 
         private void Inject_Click(object sender, EventArgs e)
         {
+            bool addvalue = false;
             InjectShowtb.Clear();
             List<string> injectList = new List<string>();
             int repeat = 0;
-            if (DUpdown.Value != 0) repeat = DUpdown.Value > 0 ? (int)DUpdown.Value : 0;
-            else if (LUpdown.Value != 0) repeat = LUpdown.Value > 0 ? (int)LUpdown.Value : 0;
-            else if (RUpdown.Value != 0) repeat = RUpdown.Value > 0 ? (int)RUpdown.Value : 0;
-            else if (IAUpdown.Value != 0) repeat = L1L2Updown.Value > 0 ? (int)IAUpdown.Value : 0;
-            else if (L1L2Updown.Value != 0) repeat = IAUpdown.Value > 0 ? (int)L1L2Updown.Value : 0;
-
-            for (int i = 0; i < repeat; i++)
+            if (DUpdown.Value != 0)
             {
-                if (DUpdown.Value > 0)
+                repeat = DUpdown.Value > 0 ? (int)DUpdown.Value : 0;
+                addvalue = true;
+            }
+            if (LUpdown.Value != 0)
+            {
+                repeat = LUpdown.Value > 0 ? (int)LUpdown.Value : 0;
+                addvalue = true;
+            }
+
+            if (RUpdown.Value != 0)
+            {
+                repeat = RUpdown.Value > 0 ? (int)RUpdown.Value : 0;
+                addvalue = true;
+            }
+
+            if (IAUpdown.Value != 0)
+            {
+                repeat = L1L2Updown.Value > 0 ? (int)IAUpdown.Value : 0;
+                addvalue = true;
+            }
+
+            if (L1L2Updown.Value != 0)
+            {
+                repeat = IAUpdown.Value > 0 ? (int)L1L2Updown.Value : 0;
+                addvalue = true;
+            }
+
+            while (addvalue)
+            {
+                for (int i = 0; i < repeat; i++)
                 {
-                    injectList.Add("No.1\r\n\r\nCircle(Multi) 4/4\r\n-1-\r\n  LS\r\n  Xc 0.401\r\n  Yc 2.790\r\n  D 4.499\r\n  R 2.249");
+                    if (DUpdown.Value > 0)
+                    {
+                        injectList.Add("No.1\r\n\r\nCircle(Multi) 4/4\r\n-1-\r\n  LS\r\n  Xc 0.401\r\n  Yc 2.790\r\n  D 4.499\r\n  R 2.249");
+                    }
+                    if (LUpdown.Value > 0)
+                    {
+                        injectList.Add("No.1\r\nDistance(Point‑Point) 2/2\r\n-1-\r\n  L 1.501\r\n  dx 1.502\r\n  dY 0.001\r\n");
+                    }
+                    if (RUpdown.Value > 0)
+                    {
+                        injectList.Add("No.1\r\n\r\nCircle 3/3\r\n-1-\r\n  Xc -3.546\r\n  Yc 3.331\r\n  D 0.579\r\n  R 0.289\r\n");
+                    }
+                    if (IAUpdown.Value > 0)
+                    {
+                        injectList.Add("No.1\r\nRectangle 5/5\r\n-1-\r\n  X 22.506\r\n  Y 28.186\r\n  L1 9.013\r\n  L2 9.014");
+                    }
+                    if (L1L2Updown.Value > 0)
+                    {
+                        injectList.Add("No.2\r\nIntersection(Line‑Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43");
+                    }
                 }
-                if (LUpdown.Value > 0)
-                {
-                    injectList.Add("No.1\r\nDistance(Point‑Point) 2/2\r\n-1-\r\n  L 1.501\r\n  dx 1.502\r\n  dY 0.001\r\n");
-                }
-                if (RUpdown.Value > 0)
-                {
-                    injectList.Add("No.1\r\n\r\nCircle 3/3\r\n-1-\r\n  Xc -3.546\r\n  Yc 3.331\r\n  D 0.579\r\n  R 0.289\r\n");
-                }
-                if (IAUpdown.Value > 0)
-                {
-                    injectList.Add("No.1\r\nRectangle 5/5\r\n-1-\r\n  X 22.506\r\n  Y 28.186\r\n  L1 9.013\r\n  L2 9.014");
-                }
-                if (L1L2Updown.Value > 0)
-                {
-                    injectList.Add("No.2\r\nIntersection(Line‑Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43");
-                }
+                addvalue = false;
+                break;
             }
 
 
