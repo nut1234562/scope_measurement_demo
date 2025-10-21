@@ -53,8 +53,8 @@ namespace scope_measurement_demo
             AddMeasurement(injectList, DUpdown, "No.1\r\n\r\nCircle(Multi) 4/4\r\n-1-\r\n  LS\r\n  Xc 0.401\r\n  Yc 2.790\r\n  D 4.499\r\n  R 2.249");
             AddMeasurement(injectList, LUpdown, "No.1\r\nDistance(Point‑Point) 2/2\r\n-1-\r\n  L 1.501\r\n  dx 1.502\r\n  dY 0.001\r\n");
             AddMeasurement(injectList, RUpdown, "No.1\r\n\r\nCircle 3/3\r\n-1-\r\n  Xc -3.546\r\n  Yc 3.331\r\n  D 0.579\r\n  R 0.289\r\n");
-            AddMeasurement(injectList, IAUpdown, "No.1\r\nRectangle 5/5\r\n-1-\r\n  X 22.506\r\n  Y 28.186\r\n  L1 9.013\r\n  L2 9.014");
-            AddMeasurement(injectList, L1L2Updown, "No.2\r\nIntersection(Line‑Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43");
+            AddMeasurement(injectList, L1L2Updown, "No.1\r\nRectangle 5/5\r\n-1-\r\n  X 22.506\r\n  Y 28.186\r\n  L1 9.013\r\n  L2 9.014");
+            AddMeasurement(injectList, IAUpdown, "No.2\r\nIntersection(Line‑Line) 2/2\r\n-1-\r\n  X 5.894\r\n  Y -15.165\r\n  IA 22:05:43");
 
             if (injectList.Count == 0)
             {
@@ -85,27 +85,6 @@ namespace scope_measurement_demo
             }
         }
 
-        //private void RinjectCK_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    CheckBox cb = sender as CheckBox;
-
-        //    if (cb.Checked)
-        //    {
-        //        // Add to list if checked
-        //        checkOrder.Add(cb);
-        //    }
-        //    else
-        //    {
-        //        // Remove if unchecked
-        //        checkOrder.Remove(cb);
-        //    }
-        //}
-
-        private void domainUpDown1_SelectedItemChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void Serial2Connect_Click(object sender, EventArgs e)
         {
             if (!serial2.IsOpen)
@@ -120,7 +99,7 @@ namespace scope_measurement_demo
                     try
                     {
                         serial2 = new SerialPort(); // assign to class-level variable
-                        serial2.PortName = Serial2cb.SelectedItem.ToString();
+                        serial2.PortName = "COM10";//Serial2cb.SelectedItem.ToString();
                         serial2.BaudRate = 9600;
                         serial2.DataBits = 8;
                         serial2.StopBits = StopBits.One;

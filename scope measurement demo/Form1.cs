@@ -203,8 +203,7 @@ namespace scope_measurement_demo
             if(IACheckbox.Checked)
             {
                 var (ia1, ia2, ia3) = IAExtraction(lines);
-                ConvertedData.Clear();
-                ConvertedData.AppendText($"IA1: {ia1}\r\nIA2: {ia2}\r\nIA3: {ia3}\r\n");
+                ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3}\t");
                 //Keypress(1, ia1, ia2, ia3);
             }
 
