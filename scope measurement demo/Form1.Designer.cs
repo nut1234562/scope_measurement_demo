@@ -30,6 +30,8 @@
         {
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            excelbt = new Button();
+            excelcel = new Label();
             L1L2Checkbox = new CheckBox();
             IACheckbox = new CheckBox();
             RCheckbox = new CheckBox();
@@ -44,7 +46,6 @@
             Statelb = new Label();
             debugtextbox2 = new TextBox();
             debugtextbox = new TextBox();
-            Itemcb = new ComboBox();
             testbt = new Button();
             button2 = new Button();
             ConvertedData = new TextBox();
@@ -93,6 +94,8 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(excelbt);
+            tabPage1.Controls.Add(excelcel);
             tabPage1.Controls.Add(L1L2Checkbox);
             tabPage1.Controls.Add(IACheckbox);
             tabPage1.Controls.Add(RCheckbox);
@@ -107,7 +110,6 @@
             tabPage1.Controls.Add(Statelb);
             tabPage1.Controls.Add(debugtextbox2);
             tabPage1.Controls.Add(debugtextbox);
-            tabPage1.Controls.Add(Itemcb);
             tabPage1.Controls.Add(testbt);
             tabPage1.Controls.Add(button2);
             tabPage1.Controls.Add(ConvertedData);
@@ -127,6 +129,25 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Printing";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // excelbt
+            // 
+            excelbt.Location = new Point(534, 291);
+            excelbt.Name = "excelbt";
+            excelbt.Size = new Size(75, 23);
+            excelbt.TabIndex = 26;
+            excelbt.Text = "button1";
+            excelbt.UseVisualStyleBackColor = true;
+            excelbt.Click += excelbt_Click;
+            // 
+            // excelcel
+            // 
+            excelcel.AutoSize = true;
+            excelcel.Location = new Point(481, 221);
+            excelcel.Name = "excelcel";
+            excelcel.Size = new Size(44, 15);
+            excelcel.TabIndex = 25;
+            excelcel.Text = "label14";
             // 
             // L1L2Checkbox
             // 
@@ -260,15 +281,6 @@
             debugtextbox.ScrollBars = ScrollBars.Vertical;
             debugtextbox.Size = new Size(377, 159);
             debugtextbox.TabIndex = 16;
-            // 
-            // Itemcb
-            // 
-            Itemcb.FormattingEnabled = true;
-            Itemcb.Location = new Point(964, 59);
-            Itemcb.Margin = new Padding(3, 2, 3, 2);
-            Itemcb.Name = "Itemcb";
-            Itemcb.Size = new Size(133, 23);
-            Itemcb.TabIndex = 15;
             // 
             // testbt
             // 
@@ -600,6 +612,7 @@
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
             Text = "Form1";
+            FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
@@ -641,7 +654,6 @@
         private Label Statelb;
         private TextBox debugtextbox2;
         private TextBox debugtextbox;
-        private ComboBox Itemcb;
         private Button testbt;
         private Button button2;
         private TextBox ConvertedData;
@@ -657,5 +669,7 @@
         private CheckBox L1L2Checkbox;
         private CheckBox IACheckbox;
         private CheckBox RCheckbox;
+        private Label excelcel;
+        private Button excelbt;
     }
 }

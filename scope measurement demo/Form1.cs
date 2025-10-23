@@ -1,23 +1,25 @@
-﻿using Microsoft.VisualBasic;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.IO.Ports;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using System.Runtime.InteropServices;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Linq;       // for Select(...)
+using System.Collections.Generic;
+
+
 namespace scope_measurement_demo
 {
 
 
     public partial class Form1 : Form
     {
-        //List<double> lList = new List<double> { };
-        //List<double> rList = new List<double> { };
-        //List<double> dxList = new List<double> { };
-        //List<double> dyList = new List<double> { };
+        private Excel.Application _excel;
+        private bool _weStartedExcel = false;
+
+        // keep the history here
+        private readonly List<string> _pickHistory = new();
+        private const int MaxHistory = 200;
         private List<string> serialLineBuffer = new List<string>(128);
         List<Measurement> measurements = new List<Measurement>();
 
@@ -65,7 +67,23 @@ namespace scope_measurement_demo
             cbparitybit.SelectedIndex = 0; // ตั้งค่า parity เป็นค่าเริ่มต้น
         }
 
+        private void Excel_SheetSelectionChange(object Sh, Excel.Range Target)
+        {
+            try
+            {
+                // last clicked cell (top-left if they dragged)
+                string addr = _excel?.ActiveCell?.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1];
+                if (string.IsNullOrEmpty(addr)) return;
 
+                // de-dupe consecutive repeats
+                if (_pickHistory.Count == 0 || _pickHistory[^1] != addr)
+                {
+                    _pickHistory.Add(addr);
+                    if (_pickHistory.Count > MaxHistory) _pickHistory.RemoveAt(0);
+                }
+            }
+            catch { /* ignore */ }
+        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -143,7 +161,7 @@ namespace scope_measurement_demo
                 Statelb.Text = "AppendText";
                 serialTimeoutTimer.Stop();
                 serialTimeoutTimer.Start();
-               
+
             }));
 
 
@@ -185,23 +203,23 @@ namespace scope_measurement_demo
                 debugtextbox.AppendText("each line " + line + Environment.NewLine);
             }
 
-            if(DCheckbox.Checked)
+            if (DCheckbox.Checked)
             {
                 DExtraction(lines);
             }
-            if(LCheckbox.Checked)
+            if (LCheckbox.Checked)
             {
                 LExtraction(lines);
             }
-            if(RCheckbox.Checked)
+            if (RCheckbox.Checked)
             {
                 RExtraction(lines);
             }
-            if(L1L2Checkbox.Checked)
+            if (L1L2Checkbox.Checked)
             {
                 L1L2Extraction(lines);
             }
-            if(IACheckbox.Checked)
+            if (IACheckbox.Checked)
             {
                 var (ia1, ia2, ia3) = IAExtraction(lines);
                 ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3}\t");
@@ -619,6 +637,39 @@ namespace scope_measurement_demo
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void excelbt_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var sel = _excel?.Selection as Excel.Range;
+                if (sel == null)
+                {
+                    excelcel.Text = "Nothing selected in Excel.";
+                    return;
+                }
+
+                // list each area; for single cell, this is just that cell
+                var parts = new List<string>();
+                foreach (Excel.Range area in sel.Areas)
+                {
+                    parts.Add(area.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1]);
+                }
+                excelcel.Text = "Current selection areas: " + string.Join("  →  ", parts);
+            }
+            catch (Exception ex)
+            {
+                excelcel.Text = "Error: " + ex.Message;
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try { ((Excel.AppEvents_Event)_excel).SheetSelectionChange -= Excel_SheetSelectionChange; } catch { }
+            try { if (_weStartedExcel && _excel?.Workbooks.Count == 0) _excel.Quit(); } catch { }
+            if (_excel != null) Marshal.FinalReleaseComObject(_excel);
+            _excel = null;
         }
     }
 
