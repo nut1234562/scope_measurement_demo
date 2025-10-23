@@ -16,6 +16,7 @@ namespace scope_measurement_demo
     {
         private Excel.Application _excel;
         private bool _weStartedExcel = false;
+        private bool _excelEventsHooked = false;
 
         // keep the history here
         private readonly List<string> _pickHistory = new();
@@ -72,8 +73,12 @@ namespace scope_measurement_demo
             try
             {
                 // last clicked cell (top-left if they dragged)
-                string addr = _excel?.ActiveCell?.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1];
-                if (string.IsNullOrEmpty(addr)) return;
+                string addr = Target?.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1];
+                if (string.IsNullOrEmpty(addr))
+                {
+                    UpdateExcelSelectionLabel("Nothing selected in Excel.");
+                    return;
+                }
 
                 // de-dupe consecutive repeats
                 if (_pickHistory.Count == 0 || _pickHistory[^1] != addr)
@@ -81,8 +86,71 @@ namespace scope_measurement_demo
                     _pickHistory.Add(addr);
                     if (_pickHistory.Count > MaxHistory) _pickHistory.RemoveAt(0);
                 }
+
+                UpdateExcelSelectionLabel($"Current selection: {addr}");
             }
-            catch { /* ignore */ }
+            catch (Exception ex)
+            {
+                UpdateExcelSelectionLabel("Error: " + ex.Message);
+            }
+        }
+
+        private void UpdateExcelSelectionLabel(string message)
+        {
+            if (excelcel.IsHandleCreated && excelcel.InvokeRequired)
+            {
+                try
+                {
+                    excelcel.BeginInvoke(new Action(() => excelcel.Text = message));
+                }
+                catch
+                {
+                    // ignore invoke errors when shutting down
+                }
+            }
+            else
+            {
+                excelcel.Text = message;
+            }
+        }
+
+        private bool EnsureExcelInstance()
+        {
+            try
+            {
+                if (_excel == null)
+                {
+                    try
+                    {
+                        _excel = (Excel.Application)Marshal.GetActiveObject("Excel.Application");
+                        _weStartedExcel = false;
+                    }
+                    catch (COMException)
+                    {
+                        _excel = new Excel.Application();
+                        _excel.Visible = true;
+                        _weStartedExcel = true;
+                    }
+                }
+
+                if (_excel != null && !_excelEventsHooked)
+                {
+                    ((Excel.AppEvents_Event)_excel).SheetSelectionChange += Excel_SheetSelectionChange;
+                    _excelEventsHooked = true;
+                }
+
+                string addr = (_excel?.Selection as Excel.Range)?.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1];
+                UpdateExcelSelectionLabel(string.IsNullOrEmpty(addr)
+                    ? "Nothing selected in Excel."
+                    : $"Current selection: {addr}");
+
+                return _excel != null;
+            }
+            catch (Exception ex)
+            {
+                UpdateExcelSelectionLabel("Error: " + ex.Message);
+                return false;
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -643,10 +711,15 @@ namespace scope_measurement_demo
         {
             try
             {
+                if (!EnsureExcelInstance())
+                {
+                    return;
+                }
+
                 var sel = _excel?.Selection as Excel.Range;
                 if (sel == null)
                 {
-                    excelcel.Text = "Nothing selected in Excel.";
+                    UpdateExcelSelectionLabel("Nothing selected in Excel.");
                     return;
                 }
 
@@ -656,17 +729,25 @@ namespace scope_measurement_demo
                 {
                     parts.Add(area.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1]);
                 }
-                excelcel.Text = "Current selection areas: " + string.Join("  →  ", parts);
+                UpdateExcelSelectionLabel("Current selection areas: " + string.Join("  →  ", parts));
             }
             catch (Exception ex)
             {
-                excelcel.Text = "Error: " + ex.Message;
+                UpdateExcelSelectionLabel("Error: " + ex.Message);
             }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try { ((Excel.AppEvents_Event)_excel).SheetSelectionChange -= Excel_SheetSelectionChange; } catch { }
+            try
+            {
+                if (_excelEventsHooked && _excel != null)
+                {
+                    ((Excel.AppEvents_Event)_excel).SheetSelectionChange -= Excel_SheetSelectionChange;
+                    _excelEventsHooked = false;
+                }
+            }
+            catch { }
             try { if (_weStartedExcel && _excel?.Workbooks.Count == 0) _excel.Quit(); } catch { }
             if (_excel != null) Marshal.FinalReleaseComObject(_excel);
             _excel = null;
