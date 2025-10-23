@@ -138,11 +138,9 @@
             excelbt.TabIndex = 26;
             excelbt.Text = "button1";
             excelbt.UseVisualStyleBackColor = true;
-            excelbt.Click += excelbt_Click;
             // 
             // excelcel
             // 
-            excelcel.AutoSize = true;
             excelcel.Location = new Point(481, 221);
             excelcel.Name = "excelcel";
             excelcel.Size = new Size(44, 15);

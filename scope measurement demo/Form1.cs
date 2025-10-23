@@ -1,11 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Ports;
-using System.Text;
 using System.Runtime.InteropServices;
+using Microsoft.VisualBasic;
+using System.Text;
 using Excel = Microsoft.Office.Interop.Excel;
-using System.Linq;       // for Select(...)
-using System.Collections.Generic;
 
 
 namespace scope_measurement_demo
@@ -14,24 +15,18 @@ namespace scope_measurement_demo
 
     public partial class Form1 : Form
     {
-        private Excel.Application _excel;
-        private bool _weStartedExcel = false;
-
-        // keep the history here
-        private readonly List<string> _pickHistory = new();
-        private const int MaxHistory = 200;
         private List<string> serialLineBuffer = new List<string>(128);
         List<Measurement> measurements = new List<Measurement>();
 
         //double dx1 = 0, dx2 = 0, dx3 = 0, dy1 = 0, dy2 = 0, dy3 = 3, d = 0, r = 0, l1 = 0, l2 = 0, l3 = 0, l4 = 0, xc = 0, yc = 0, x = 0, y = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0; // ตัวเล็กใช้คำนวณและแสดงช่อง output
         double[] variables;
-        double DX1 = 0, DX2 = 0, DX3 = 0, DY3 = 0, DY1 = 0, DY2 = 0, D = 0, R = 0, L1 = 0, L2 = 0, L3 = 0, L4 = 0, XC = 0, YC = 0, X = 0, Y = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0;  // ตัวใหญ่ใช้แสดงผลบน UI
-        double l1Value = 0, l2Value = 0;
-        int currentline = 0;
-        string incoming;
+        double   DX1 = 0, DX2 = 0, DX3 = 0, DY3 = 0, DY1 = 0, DY2 = 0, D = 0, R = 0, L1 = 0, L2 = 0, L3 = 0, L4 = 0, XC = 0, YC = 0, X = 0, Y = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0;  // ตัวใหญ่ใช้แสดงผลบน UI
+        double   l1Value = 0, l2Value = 0;
+        int      currentline = 0;
+        string   incoming;
         static readonly Stopwatch sw = Stopwatch.StartNew();
         static long last = 0;
-        const long period = 1000;
+        const long  period = 1000;
         private readonly StringBuilder _serialBuffer = new StringBuilder();
         private const string MessageTerminator = "\n\n";
         private System.Windows.Forms.Timer serialTimeoutTimer;
@@ -42,6 +37,10 @@ namespace scope_measurement_demo
 
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
+
+
+        private Excel.Application _excel;
+        private bool _weStartedExcel;
 
 
         public Form1()
@@ -65,24 +64,6 @@ namespace scope_measurement_demo
             cbdatabit.SelectedIndex = 0; // ตั้งค่า data bit เป็นค่าเริ่มต้น
             cbstopbit.SelectedIndex = 0; // ตั้งค่า stop bit เป็นค่าเริ่มต้น
             cbparitybit.SelectedIndex = 0; // ตั้งค่า parity เป็นค่าเริ่มต้น
-        }
-
-        private void Excel_SheetSelectionChange(object Sh, Excel.Range Target)
-        {
-            try
-            {
-                // last clicked cell (top-left if they dragged)
-                string addr = _excel?.ActiveCell?.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1];
-                if (string.IsNullOrEmpty(addr)) return;
-
-                // de-dupe consecutive repeats
-                if (_pickHistory.Count == 0 || _pickHistory[^1] != addr)
-                {
-                    _pickHistory.Add(addr);
-                    if (_pickHistory.Count > MaxHistory) _pickHistory.RemoveAt(0);
-                }
-            }
-            catch { /* ignore */ }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -639,37 +620,105 @@ namespace scope_measurement_demo
 
         }
 
-        private void excelbt_Click(object sender, EventArgs e)
+        private static bool InDesignMode =>
+        LicenseManager.UsageMode == LicenseUsageMode.Designtime;
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            if (InDesignMode) return;   // don't touch Excel inside the Designer
+
+            InitExcel();                 // attach/start Excel and subscribe events
+            TryShowCurrentSelection();   // update label once at startup
+        }
+
+        private void Excel_SheetSelectionChange(object Sh, Excel.Range Target)
+        {
+            if (IsHandleCreated)
+            {
+                if (InvokeRequired)
+                    BeginInvoke((Action)(() => UpdateLabel((Excel.Worksheet)Sh, Target)));
+                else
+                    UpdateLabel((Excel.Worksheet)Sh, Target);
+            }
+        }
+
+        private void InitExcel()
         {
             try
             {
-                var sel = _excel?.Selection as Excel.Range;
-                if (sel == null)
+                object excelObj = null;
+                try
                 {
-                    excelcel.Text = "Nothing selected in Excel.";
-                    return;
-                }
+                    // Use Marshal.GetActiveObject from System.Runtime.InteropServices.ComTypes
+                    _excel = Interaction.GetObject(null, "Excel.Application") as Excel.Application;
 
-                // list each area; for single cell, this is just that cell
-                var parts = new List<string>();
-                foreach (Excel.Range area in sel.Areas)
-                {
-                    parts.Add(area.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1]);
                 }
-                excelcel.Text = "Current selection areas: " + string.Join("  →  ", parts);
+                catch
+                {
+                    // fallback if Excel is not running
+                }
+                _excel = excelObj as Excel.Application;
+
             }
-            catch (Exception ex)
+            catch
             {
-                excelcel.Text = "Error: " + ex.Message;
+                _excel = new Excel.Application { Visible = true };
+                _weStartedExcel = true;
             }
+
+        // subscribe to selection changes (fires for any sheet)
+        ((Excel.AppEvents_Event)_excel).SheetSelectionChange += Excel_SheetSelectionChange;
+        }
+
+        private void TryShowCurrentSelection()
+        {
+            try
+            {
+                if (_excel?.Selection is Excel.Range sel)
+                    UpdateLabel(sel.Worksheet, sel);
+                else
+                    excelcel.Text = "Excel: no selection.";
+            }
+            catch
+            {
+                excelcel.Text = "Excel: no workbook open.";
+            }
+        }
+
+        private void UpdateLabel(Excel.Worksheet sheet, Excel.Range selection)
+        {
+            // Address in A1 style; preview top-left value
+            string sheetName = sheet?.Name ?? "(unknown)";
+            string address = selection?.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1] ?? "(none)";
+
+            object v = null;
+            try { v = selection?.Cells[1, 1]?.Value2; } catch { }
+
+            string preview = v switch
+            {
+                null => "(empty)",
+                double d => d.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                DateTime dt => dt.ToString("yyyy-MM-dd HH:mm:ss"),
+                _ => v?.ToString()
+            };
+
+            long count = 1;
+            try { count = (long)selection.CountLarge; } catch { /* older Excel */ }
+
+            excelcel.Text = count > 1
+                ? $"Sheet: {sheetName}  |  Range: {address}  |  Cells: {count}  |  Top-left: {preview}"
+                : $"Sheet: {sheetName}  |  Cell: {address}  |  Value: {preview}";
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try { ((Excel.AppEvents_Event)_excel).SheetSelectionChange -= Excel_SheetSelectionChange; } catch { }
+            try { if (_excel != null) ((Excel.AppEvents_Event)_excel).SheetSelectionChange -= Excel_SheetSelectionChange; } catch { }
             try { if (_weStartedExcel && _excel?.Workbooks.Count == 0) _excel.Quit(); } catch { }
             if (_excel != null) Marshal.FinalReleaseComObject(_excel);
             _excel = null;
+
+            base.OnFormClosing(e);
         }
     }
 
