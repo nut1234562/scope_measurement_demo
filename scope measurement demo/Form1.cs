@@ -1,23 +1,21 @@
 ﻿using Microsoft.VisualBasic;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using System.Text.RegularExpressions;
+using Excel = Microsoft.Office.Interop.Excel;
+
+
 namespace scope_measurement_demo
 {
 
 
     public partial class Form1 : Form
     {
-        //List<double> lList = new List<double> { };
-        //List<double> rList = new List<double> { };
-        //List<double> dxList = new List<double> { };
-        //List<double> dyList = new List<double> { };
         private List<string> serialLineBuffer = new List<string>(128);
         List<Measurement> measurements = new List<Measurement>();
 
@@ -40,6 +38,13 @@ namespace scope_measurement_demo
 
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
+
+
+        private Excel.Application _excel;
+        private bool _weStartedExcel;
+        private static readonly Regex NumberAfterColon = new(
+                    @":\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?)",
+                    RegexOptions.Compiled);
 
 
         public Form1()
@@ -65,8 +70,6 @@ namespace scope_measurement_demo
             cbparitybit.SelectedIndex = 0; // ตั้งค่า parity เป็นค่าเริ่มต้น
         }
 
-
-
         private void Form1_Load(object sender, EventArgs e)
         {
 
@@ -77,6 +80,45 @@ namespace scope_measurement_demo
 
         }
         // Replace the Refresh_Click method with the following code
+
+        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            string incoming = serialPort.ReadExisting();
+            this.Invoke(new MethodInvoker(() =>
+            {
+                ReceivedData.Clear();
+                ConvertedData.Clear();
+                string[] lines = incoming.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    Textfromserial.AppendText(lines[i] + Environment.NewLine);
+                    serialLineBuffer.Add(lines[i]);
+                }
+                Statelb.Text = "AppendText";
+                serialTimeoutTimer.Stop();
+                serialTimeoutTimer.Start();
+
+            }));
+
+
+        }
+
+        private void SerialTimeoutTimer_Tick(object sender, EventArgs e)
+        {
+            ReceivedData.Text += string.Join(Environment.NewLine, serialLineBuffer) + Environment.NewLine;
+            Dataprocess();
+            SendValueToExcel();
+            Textfromserial.Clear();
+            serialLineBuffer.Clear();
+            serialTimeoutTimer.Stop(); // Stop timer after clearing
+        }
+
+        private void UpdateConnectionStatus(bool isConnected)
+        {
+            lblConnectionStatus.Text = isConnected ? "Connected" : "Disconnected";
+            lblConnectionStatus.ForeColor = isConnected ? Color.Green : Color.Red;
+        }
+
         private void Refresh_Click(object sender, EventArgs e)
         {
             cbport.Items.Clear();
@@ -127,42 +169,6 @@ namespace scope_measurement_demo
                 MessageBox.Show("Serial Port is already open.");
             }
         }
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            string incoming = serialPort.ReadExisting();
-            this.Invoke(new MethodInvoker(() =>
-            {
-                ReceivedData.Clear();
-                ConvertedData.Clear();
-                string[] lines = incoming.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    Textfromserial.AppendText(lines[i] + Environment.NewLine);
-                    serialLineBuffer.Add(lines[i]);
-                }
-                Statelb.Text = "AppendText";
-                serialTimeoutTimer.Stop();
-                serialTimeoutTimer.Start();
-               
-            }));
-
-
-        }
-
-        private void SerialTimeoutTimer_Tick(object sender, EventArgs e)
-        {
-            ReceivedData.Text += string.Join(Environment.NewLine, serialLineBuffer) + Environment.NewLine;
-            Dataprocess();
-            Textfromserial.Clear();
-            serialLineBuffer.Clear();
-            serialTimeoutTimer.Stop(); // Stop timer after clearing
-        }
-
-        private void UpdateConnectionStatus(bool isConnected)
-        {
-            lblConnectionStatus.Text = isConnected ? "Connected" : "Disconnected";
-            lblConnectionStatus.ForeColor = isConnected ? Color.Green : Color.Red;
-        }
 
         private void Disconnect_Click(object sender, EventArgs e)
         {
@@ -185,26 +191,26 @@ namespace scope_measurement_demo
                 debugtextbox.AppendText("each line " + line + Environment.NewLine);
             }
 
-            if(DCheckbox.Checked)
+            if (DCheckbox.Checked)
             {
                 DExtraction(lines);
             }
-            if(LCheckbox.Checked)
+            if (LCheckbox.Checked)
             {
                 LExtraction(lines);
             }
-            if(RCheckbox.Checked)
+            if (RCheckbox.Checked)
             {
                 RExtraction(lines);
             }
-            if(L1L2Checkbox.Checked)
+            if (L1L2Checkbox.Checked)
             {
                 L1L2Extraction(lines);
             }
-            if(IACheckbox.Checked)
+            if (IACheckbox.Checked)
             {
                 var (ia1, ia2, ia3) = IAExtraction(lines);
-                ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3}\t");
+                ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3},\t");
                 //Keypress(1, ia1, ia2, ia3);
             }
 
@@ -270,7 +276,7 @@ namespace scope_measurement_demo
                         measurements.Add(new Measurement { D = dValue });
                     }
 
-                    ConvertedData.AppendText($"D: {dValue}\t");
+                    ConvertedData.AppendText($"D: {dValue},\t");
                     n++;
                 }
             }
@@ -296,7 +302,7 @@ namespace scope_measurement_demo
                             measurements.Add(new Measurement { L = lValue });
                         }
 
-                        ConvertedData.AppendText($"L: {lValue}\t");
+                        ConvertedData.AppendText($"L: {lValue},\t");
                         n++;
                     }
                 }
@@ -363,7 +369,7 @@ namespace scope_measurement_demo
                         measurements.Add(new Measurement { R = rValue });
                     }
 
-                    ConvertedData.AppendText($"R: {rValue}\t");
+                    ConvertedData.AppendText($"R: {rValue},\t");
                     measurementIndex++;
                 }
             }
@@ -414,7 +420,7 @@ namespace scope_measurement_demo
             .FirstOrDefault(line => line.Trim().StartsWith("L2"));
 
             ExtractMethod_4(l1Line, l2Line);
-            ConvertedData.AppendText($"L1: {l1Value}\tL2: {l2Value}\t");
+            ConvertedData.AppendText($"L1: {l1Value}\tL2: {l2Value},\t");
             //Keypress(3, l1Value, l2Value);
         }
 
@@ -580,7 +586,6 @@ namespace scope_measurement_demo
             debugtextbox.Clear();
             ReceivedData.Clear();
             Textfromserial.Clear();
-            debugtextbox2.Clear();
             ConvertedData.Clear();
             serialLineBuffer.Clear();
             measurements.Clear();
@@ -620,6 +625,203 @@ namespace scope_measurement_demo
         {
 
         }
+
+        private void UpdateStatus()
+        {
+            if (_excel == null)
+            {
+                lblStatus.Text = "Excel: (not attached)";
+                return;
+            }
+
+            try
+            {
+                string wbName = _excel.ActiveWorkbook != null
+                    ? _excel.ActiveWorkbook.Name
+                    : "(no workbook)";
+                lblStatus.Text = $"Excel: attached ({_excel.Version}) — {wbName}";
+            }
+            catch
+            {
+                lblStatus.Text = "Excel: lost connection";
+                _excel = null;
+            }
+        }
+
+        private void Excel_SheetSelectionChange(object Sh, Excel.Range Target)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() =>
+                {
+                    RefreshSelectionList();
+                    UpdateStatus();
+                }));
+            }
+            else
+            {
+                RefreshSelectionList();
+                UpdateStatus();
+            }
+        }
+
+        private void RefreshSelectionList()
+        {
+            lstSelection.Items.Clear();
+
+            if (_excel == null) return;
+
+            try
+            {
+                var sel = _excel.Selection as Excel.Range;
+                if (sel == null)
+                {
+                    lstSelection.Items.Add("(No selection)");
+                    return;
+                }
+
+                foreach (Excel.Range area in sel.Areas)
+                {
+                    foreach (Excel.Range cell in area.Cells)
+                    {
+                        lstSelection.Items.Add(cell.Address[false, false]);
+                        Marshal.ReleaseComObject(cell);
+                    }
+                    Marshal.ReleaseComObject(area);
+                }
+                Marshal.ReleaseComObject(sel);
+            }
+            catch
+            {
+                lstSelection.Items.Add("(Cannot read selection)");
+            }
+        }
+
+        private List<double> ExtractNumbersFromConvertedData(string text)
+        {
+            var nums = new List<double>();
+            if (string.IsNullOrWhiteSpace(text)) return nums;
+
+            foreach (Match m in NumberAfterColon.Matches(text))
+            {
+                var s = m.Groups[1].Value.Trim();
+                if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var d))
+                    nums.Add(d);
+            }
+            return nums;
+        }
+
+        private void SendValueToExcel()
+        {
+            if (_excel == null) { lblStatus.Text = "Excel is not attached."; return; }
+
+            // Read the textbox (rename here if your control name differs)
+            string raw = ConvertedData.Text;
+            var values = ExtractNumbersFromConvertedData(raw);
+            if (values.Count == 0) { lblStatus.Text = "No numbers found after ':'."; return; }
+
+            Excel.Range sel = null;
+            try { sel = _excel.Selection as Excel.Range; } catch { }
+            if (sel == null) { lblStatus.Text = "Select a cell/range in Excel first."; return; }
+
+            int written = 0;
+            int want = values.Count;
+
+            try
+            {
+                foreach (Excel.Range area in sel.Areas)
+                {
+                    long areaCount;
+                    try { areaCount = (long)area.CountLarge; } catch { areaCount = area.Count; }
+
+                    int remaining = want - written;
+                    if (remaining <= 0) break;
+
+                    // Try fast block write if we can fill the whole area
+                    if (areaCount <= int.MaxValue && areaCount <= remaining && area.Rows.Count > 0 && area.Columns.Count > 0)
+                    {
+                        int rows = area.Rows.Count;
+                        int cols = area.Columns.Count;
+                        var block = new object[rows, cols];
+                        int idx = 0;
+                        for (int r = 0; r < rows; r++)
+                        {
+                            for (int c = 0; c < cols; c++)
+                            {
+                                if (idx >= remaining) break;
+                                block[r, c] = values[written + idx];
+                                idx++;
+                            }
+                        }
+
+                        if (idx == rows * cols)
+                        {
+                            area.Value2 = block;
+                            written += idx;
+                            continue;
+                        }
+                    }
+
+                    // Fallback: cell-by-cell row-major
+                    foreach (Excel.Range cell in area.Cells)
+                    {
+                        if (written >= want) break;
+                        cell.Value2 = values[written];
+                        written++;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblStatus.Text = "Write error: " + ex.Message;
+                return;
+            }
+
+            lblStatus.Text = written == 0
+                ? "Selection has no writable cells."
+                : written < want
+                    ? $"Wrote {written}/{want} values (selection too small)."
+                    : $"Wrote {written} values to Excel.";
+        }
+
+        internal static class NativeMethods
+        {
+            [DllImport("ole32.dll", CharSet = CharSet.Unicode)]
+            internal static extern int CLSIDFromProgID(string lpszProgID, out Guid pclsid);
+
+            [DllImport("oleaut32.dll", PreserveSig = false)]
+            private static extern void GetActiveObject(ref Guid rclsid, IntPtr reserved,
+                [MarshalAs(UnmanagedType.IUnknown)] out object ppunk);
+
+            internal static object GetActiveObjectNoMarshal(Guid clsid)
+            {
+                GetActiveObject(ref clsid, IntPtr.Zero, out object obj);
+                return obj;
+            }
+        }
+
+        private void AttachExcel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (NativeMethods.CLSIDFromProgID("Excel.Application", out Guid clsid) != 0)
+                    throw new COMException("CLSIDFromProgID failed");
+
+                object excelObj = NativeMethods.GetActiveObjectNoMarshal(clsid);
+                if (excelObj == null)
+                    throw new COMException("Excel is not running");
+
+                _excel = (Excel.Application)excelObj;
+                _excel.SheetSelectionChange += Excel_SheetSelectionChange;
+
+                lblStatus.Text = "Excel: attached (" + _excel.Version + ")";
+                RefreshSelectionList();
+            }
+            catch (Exception ex)
+            {
+                lblStatus.Text = "Excel: not attached (" + ex.Message + ")";
+            }
+        }
     }
 
     public class Measurement
@@ -634,20 +836,4 @@ namespace scope_measurement_demo
         public double X { get; set; }
         public double Y { get; set; }
     }
-
-    public class Generation
-    {
-        public double L { get; set; }
-        public double dX { get; set; }
-        public double dY { get; set; }
-        public double Xc { get; set; }
-        public double Yc { get; set; }
-        public double D { get; set; }
-        public double R { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-    }
-
-
-
 }
