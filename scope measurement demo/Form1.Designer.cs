@@ -89,7 +89,7 @@
             tabControl1.Margin = new Padding(3, 2, 3, 2);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1181, 597);
+            tabControl1.Size = new Size(857, 455);
             tabControl1.TabIndex = 11;
             // 
             // tabPage1
@@ -125,7 +125,7 @@
             tabPage1.Margin = new Padding(3, 2, 3, 2);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3, 2, 3, 2);
-            tabPage1.Size = new Size(1173, 569);
+            tabPage1.Size = new Size(849, 427);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Printing";
             tabPage1.UseVisualStyleBackColor = true;
@@ -146,7 +146,7 @@
             lstSelection.ItemHeight = 15;
             lstSelection.Location = new Point(716, 205);
             lstSelection.Name = "lstSelection";
-            lstSelection.Size = new Size(120, 199);
+            lstSelection.Size = new Size(102, 199);
             lstSelection.TabIndex = 27;
             // 
             // lblStatus
@@ -280,6 +280,7 @@
             debugtextbox.ScrollBars = ScrollBars.Vertical;
             debugtextbox.Size = new Size(377, 159);
             debugtextbox.TabIndex = 16;
+            debugtextbox.Visible = false;
             // 
             // testbt
             // 
@@ -330,7 +331,7 @@
             ReceivedData.Multiline = true;
             ReceivedData.Name = "ReceivedData";
             ReceivedData.ScrollBars = ScrollBars.Vertical;
-            ReceivedData.Size = new Size(218, 519);
+            ReceivedData.Size = new Size(218, 393);
             ReceivedData.TabIndex = 0;
             ReceivedData.TextChanged += textBox1_TextChanged;
             // 
@@ -414,7 +415,7 @@
             tabPage2.Margin = new Padding(3, 2, 3, 2);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3, 2, 3, 2);
-            tabPage2.Size = new Size(1173, 569);
+            tabPage2.Size = new Size(849, 427);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Port Settings";
             tabPage2.UseVisualStyleBackColor = true;
@@ -606,7 +607,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1225, 641);
+            ClientSize = new Size(907, 503);
             Controls.Add(tabControl1);
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";

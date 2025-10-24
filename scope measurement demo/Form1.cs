@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.VisualBasic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
-using Microsoft.VisualBasic;
 using System.Text;
+using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 
 
@@ -41,6 +42,9 @@ namespace scope_measurement_demo
 
         private Excel.Application _excel;
         private bool _weStartedExcel;
+        private static readonly Regex NumberAfterColon = new(
+                    @":\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?)",
+                    RegexOptions.Compiled);
 
 
         public Form1()
@@ -103,7 +107,7 @@ namespace scope_measurement_demo
         {
             ReceivedData.Text += string.Join(Environment.NewLine, serialLineBuffer) + Environment.NewLine;
             Dataprocess();
-            SendValuesToExcel();
+            SendValueToExcel();
             Textfromserial.Clear();
             serialLineBuffer.Clear();
             serialTimeoutTimer.Stop(); // Stop timer after clearing
@@ -582,7 +586,6 @@ namespace scope_measurement_demo
             debugtextbox.Clear();
             ReceivedData.Clear();
             Textfromserial.Clear();
-            debugtextbox2.Clear();
             ConvertedData.Clear();
             serialLineBuffer.Clear();
             measurements.Clear();
@@ -649,12 +652,16 @@ namespace scope_measurement_demo
         {
             if (InvokeRequired)
             {
-                // เรียกกลับไปทำงานใน UI thread
-                BeginInvoke(new Action(RefreshSelectionList));
+                BeginInvoke(new Action(() =>
+                {
+                    RefreshSelectionList();
+                    UpdateStatus();
+                }));
             }
             else
             {
                 RefreshSelectionList();
+                UpdateStatus();
             }
         }
 
@@ -690,46 +697,91 @@ namespace scope_measurement_demo
             }
         }
 
-        private void SendValuesToExcel()
+        private List<double> ExtractNumbersFromConvertedData(string text)
         {
-            if (_excel == null)
-            {
-                MessageBox.Show("Excel not attached.", "Info",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
+            var nums = new List<double>();
+            if (string.IsNullOrWhiteSpace(text)) return nums;
 
-            string[] values = ConvertedData.Text.Split(
-                new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (Match m in NumberAfterColon.Matches(text))
+            {
+                var s = m.Groups[1].Value.Trim();
+                if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var d))
+                    nums.Add(d);
+            }
+            return nums;
+        }
+
+        private void SendValueToExcel()
+        {
+            if (_excel == null) { lblStatus.Text = "Excel is not attached."; return; }
+
+            // Read the textbox (rename here if your control name differs)
+            string raw = ConvertedData.Text;
+            var values = ExtractNumbersFromConvertedData(raw);
+            if (values.Count == 0) { lblStatus.Text = "No numbers found after ':'."; return; }
+
+            Excel.Range sel = null;
+            try { sel = _excel.Selection as Excel.Range; } catch { }
+            if (sel == null) { lblStatus.Text = "Select a cell/range in Excel first."; return; }
+
+            int written = 0;
+            int want = values.Count;
 
             try
             {
-                var sel = _excel.Selection as Excel.Range;
-                if (sel == null)
+                foreach (Excel.Range area in sel.Areas)
                 {
-                    MessageBox.Show("No cells selected in Excel.", "Info");
-                    return;
-                }
+                    long areaCount;
+                    try { areaCount = (long)area.CountLarge; } catch { areaCount = area.Count; }
 
-                var cells = sel.Cells;
-                int i = 0;
-                foreach (Excel.Range c in cells)
-                {
-                    if (i >= values.Length) break;
-                    c.Value2 = values[i].Trim();
-                    i++;
-                    Marshal.ReleaseComObject(c);
-                }
+                    int remaining = want - written;
+                    if (remaining <= 0) break;
 
-                Marshal.ReleaseComObject(cells);
-                Marshal.ReleaseComObject(sel);
-                RefreshSelectionList();
+                    // Try fast block write if we can fill the whole area
+                    if (areaCount <= int.MaxValue && areaCount <= remaining && area.Rows.Count > 0 && area.Columns.Count > 0)
+                    {
+                        int rows = area.Rows.Count;
+                        int cols = area.Columns.Count;
+                        var block = new object[rows, cols];
+                        int idx = 0;
+                        for (int r = 0; r < rows; r++)
+                        {
+                            for (int c = 0; c < cols; c++)
+                            {
+                                if (idx >= remaining) break;
+                                block[r, c] = values[written + idx];
+                                idx++;
+                            }
+                        }
+
+                        if (idx == rows * cols)
+                        {
+                            area.Value2 = block;
+                            written += idx;
+                            continue;
+                        }
+                    }
+
+                    // Fallback: cell-by-cell row-major
+                    foreach (Excel.Range cell in area.Cells)
+                    {
+                        if (written >= want) break;
+                        cell.Value2 = values[written];
+                        written++;
+                    }
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to send: " + ex.Message,
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                lblStatus.Text = "Write error: " + ex.Message;
+                return;
             }
+
+            lblStatus.Text = written == 0
+                ? "Selection has no writable cells."
+                : written < want
+                    ? $"Wrote {written}/{want} values (selection too small)."
+                    : $"Wrote {written} values to Excel.";
         }
 
         internal static class NativeMethods
