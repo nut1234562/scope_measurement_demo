@@ -30,8 +30,9 @@
         {
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
-            excelbt = new Button();
-            excelcel = new Label();
+            AttachExcel = new Button();
+            lstSelection = new ListBox();
+            lblStatus = new Label();
             L1L2Checkbox = new CheckBox();
             IACheckbox = new CheckBox();
             RCheckbox = new CheckBox();
@@ -44,7 +45,6 @@
             Connect2 = new Button();
             Injectwindowckb = new CheckBox();
             Statelb = new Label();
-            debugtextbox2 = new TextBox();
             debugtextbox = new TextBox();
             testbt = new Button();
             button2 = new Button();
@@ -89,13 +89,14 @@
             tabControl1.Margin = new Padding(3, 2, 3, 2);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(916, 597);
+            tabControl1.Size = new Size(1181, 597);
             tabControl1.TabIndex = 11;
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(excelbt);
-            tabPage1.Controls.Add(excelcel);
+            tabPage1.Controls.Add(AttachExcel);
+            tabPage1.Controls.Add(lstSelection);
+            tabPage1.Controls.Add(lblStatus);
             tabPage1.Controls.Add(L1L2Checkbox);
             tabPage1.Controls.Add(IACheckbox);
             tabPage1.Controls.Add(RCheckbox);
@@ -108,7 +109,6 @@
             tabPage1.Controls.Add(Connect2);
             tabPage1.Controls.Add(Injectwindowckb);
             tabPage1.Controls.Add(Statelb);
-            tabPage1.Controls.Add(debugtextbox2);
             tabPage1.Controls.Add(debugtextbox);
             tabPage1.Controls.Add(testbt);
             tabPage1.Controls.Add(button2);
@@ -125,27 +125,37 @@
             tabPage1.Margin = new Padding(3, 2, 3, 2);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3, 2, 3, 2);
-            tabPage1.Size = new Size(908, 569);
+            tabPage1.Size = new Size(1173, 569);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Printing";
             tabPage1.UseVisualStyleBackColor = true;
             // 
-            // excelbt
+            // AttachExcel
             // 
-            excelbt.Location = new Point(534, 291);
-            excelbt.Name = "excelbt";
-            excelbt.Size = new Size(75, 23);
-            excelbt.TabIndex = 26;
-            excelbt.Text = "button1";
-            excelbt.UseVisualStyleBackColor = true;
+            AttachExcel.Location = new Point(582, 292);
+            AttachExcel.Name = "AttachExcel";
+            AttachExcel.Size = new Size(87, 23);
+            AttachExcel.TabIndex = 28;
+            AttachExcel.Text = "AttachExcel";
+            AttachExcel.UseVisualStyleBackColor = true;
+            AttachExcel.Click += AttachExcel_Click;
             // 
-            // excelcel
+            // lstSelection
             // 
-            excelcel.Location = new Point(481, 221);
-            excelcel.Name = "excelcel";
-            excelcel.Size = new Size(44, 15);
-            excelcel.TabIndex = 25;
-            excelcel.Text = "label14";
+            lstSelection.FormattingEnabled = true;
+            lstSelection.ItemHeight = 15;
+            lstSelection.Location = new Point(716, 205);
+            lstSelection.Name = "lstSelection";
+            lstSelection.Size = new Size(120, 199);
+            lstSelection.TabIndex = 27;
+            // 
+            // lblStatus
+            // 
+            lblStatus.Location = new Point(481, 221);
+            lblStatus.Name = "lblStatus";
+            lblStatus.Size = new Size(44, 15);
+            lblStatus.TabIndex = 25;
+            lblStatus.Text = "label14";
             // 
             // L1L2Checkbox
             // 
@@ -261,15 +271,6 @@
             Statelb.Size = new Size(33, 15);
             Statelb.TabIndex = 18;
             Statelb.Text = "State";
-            // 
-            // debugtextbox2
-            // 
-            debugtextbox2.Location = new Point(692, 185);
-            debugtextbox2.Multiline = true;
-            debugtextbox2.Name = "debugtextbox2";
-            debugtextbox2.ScrollBars = ScrollBars.Vertical;
-            debugtextbox2.Size = new Size(188, 376);
-            debugtextbox2.TabIndex = 17;
             // 
             // debugtextbox
             // 
@@ -413,7 +414,7 @@
             tabPage2.Margin = new Padding(3, 2, 3, 2);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3, 2, 3, 2);
-            tabPage2.Size = new Size(908, 569);
+            tabPage2.Size = new Size(1173, 569);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Port Settings";
             tabPage2.UseVisualStyleBackColor = true;
@@ -605,12 +606,11 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(968, 641);
+            ClientSize = new Size(1225, 641);
             Controls.Add(tabControl1);
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
             Text = "Form1";
-            FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
@@ -650,7 +650,6 @@
         private Button Connect2;
         private CheckBox Injectwindowckb;
         private Label Statelb;
-        private TextBox debugtextbox2;
         private TextBox debugtextbox;
         private Button testbt;
         private Button button2;
@@ -667,7 +666,8 @@
         private CheckBox L1L2Checkbox;
         private CheckBox IACheckbox;
         private CheckBox RCheckbox;
-        private Label excelcel;
-        private Button excelbt;
+        private Label lblStatus;
+        private ListBox lstSelection;
+        private Button AttachExcel;
     }
 }

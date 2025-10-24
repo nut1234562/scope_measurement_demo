@@ -20,13 +20,13 @@ namespace scope_measurement_demo
 
         //double dx1 = 0, dx2 = 0, dx3 = 0, dy1 = 0, dy2 = 0, dy3 = 3, d = 0, r = 0, l1 = 0, l2 = 0, l3 = 0, l4 = 0, xc = 0, yc = 0, x = 0, y = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0; // ตัวเล็กใช้คำนวณและแสดงช่อง output
         double[] variables;
-        double   DX1 = 0, DX2 = 0, DX3 = 0, DY3 = 0, DY1 = 0, DY2 = 0, D = 0, R = 0, L1 = 0, L2 = 0, L3 = 0, L4 = 0, XC = 0, YC = 0, X = 0, Y = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0;  // ตัวใหญ่ใช้แสดงผลบน UI
-        double   l1Value = 0, l2Value = 0;
-        int      currentline = 0;
-        string   incoming;
+        double DX1 = 0, DX2 = 0, DX3 = 0, DY3 = 0, DY1 = 0, DY2 = 0, D = 0, R = 0, L1 = 0, L2 = 0, L3 = 0, L4 = 0, XC = 0, YC = 0, X = 0, Y = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0;  // ตัวใหญ่ใช้แสดงผลบน UI
+        double l1Value = 0, l2Value = 0;
+        int currentline = 0;
+        string incoming;
         static readonly Stopwatch sw = Stopwatch.StartNew();
         static long last = 0;
-        const long  period = 1000;
+        const long period = 1000;
         private readonly StringBuilder _serialBuffer = new StringBuilder();
         private const string MessageTerminator = "\n\n";
         private System.Windows.Forms.Timer serialTimeoutTimer;
@@ -76,6 +76,45 @@ namespace scope_measurement_demo
 
         }
         // Replace the Refresh_Click method with the following code
+
+        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            string incoming = serialPort.ReadExisting();
+            this.Invoke(new MethodInvoker(() =>
+            {
+                ReceivedData.Clear();
+                ConvertedData.Clear();
+                string[] lines = incoming.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    Textfromserial.AppendText(lines[i] + Environment.NewLine);
+                    serialLineBuffer.Add(lines[i]);
+                }
+                Statelb.Text = "AppendText";
+                serialTimeoutTimer.Stop();
+                serialTimeoutTimer.Start();
+
+            }));
+
+
+        }
+
+        private void SerialTimeoutTimer_Tick(object sender, EventArgs e)
+        {
+            ReceivedData.Text += string.Join(Environment.NewLine, serialLineBuffer) + Environment.NewLine;
+            Dataprocess();
+            SendValuesToExcel();
+            Textfromserial.Clear();
+            serialLineBuffer.Clear();
+            serialTimeoutTimer.Stop(); // Stop timer after clearing
+        }
+
+        private void UpdateConnectionStatus(bool isConnected)
+        {
+            lblConnectionStatus.Text = isConnected ? "Connected" : "Disconnected";
+            lblConnectionStatus.ForeColor = isConnected ? Color.Green : Color.Red;
+        }
+
         private void Refresh_Click(object sender, EventArgs e)
         {
             cbport.Items.Clear();
@@ -126,42 +165,6 @@ namespace scope_measurement_demo
                 MessageBox.Show("Serial Port is already open.");
             }
         }
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            string incoming = serialPort.ReadExisting();
-            this.Invoke(new MethodInvoker(() =>
-            {
-                ReceivedData.Clear();
-                ConvertedData.Clear();
-                string[] lines = incoming.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    Textfromserial.AppendText(lines[i] + Environment.NewLine);
-                    serialLineBuffer.Add(lines[i]);
-                }
-                Statelb.Text = "AppendText";
-                serialTimeoutTimer.Stop();
-                serialTimeoutTimer.Start();
-
-            }));
-
-
-        }
-
-        private void SerialTimeoutTimer_Tick(object sender, EventArgs e)
-        {
-            ReceivedData.Text += string.Join(Environment.NewLine, serialLineBuffer) + Environment.NewLine;
-            Dataprocess();
-            Textfromserial.Clear();
-            serialLineBuffer.Clear();
-            serialTimeoutTimer.Stop(); // Stop timer after clearing
-        }
-
-        private void UpdateConnectionStatus(bool isConnected)
-        {
-            lblConnectionStatus.Text = isConnected ? "Connected" : "Disconnected";
-            lblConnectionStatus.ForeColor = isConnected ? Color.Green : Color.Red;
-        }
 
         private void Disconnect_Click(object sender, EventArgs e)
         {
@@ -203,7 +206,7 @@ namespace scope_measurement_demo
             if (IACheckbox.Checked)
             {
                 var (ia1, ia2, ia3) = IAExtraction(lines);
-                ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3}\t");
+                ConvertedData.AppendText($"IA1: {ia1}\tIA2: {ia2}\tIA3: {ia3},\t");
                 //Keypress(1, ia1, ia2, ia3);
             }
 
@@ -269,7 +272,7 @@ namespace scope_measurement_demo
                         measurements.Add(new Measurement { D = dValue });
                     }
 
-                    ConvertedData.AppendText($"D: {dValue}\t");
+                    ConvertedData.AppendText($"D: {dValue},\t");
                     n++;
                 }
             }
@@ -295,7 +298,7 @@ namespace scope_measurement_demo
                             measurements.Add(new Measurement { L = lValue });
                         }
 
-                        ConvertedData.AppendText($"L: {lValue}\t");
+                        ConvertedData.AppendText($"L: {lValue},\t");
                         n++;
                     }
                 }
@@ -362,7 +365,7 @@ namespace scope_measurement_demo
                         measurements.Add(new Measurement { R = rValue });
                     }
 
-                    ConvertedData.AppendText($"R: {rValue}\t");
+                    ConvertedData.AppendText($"R: {rValue},\t");
                     measurementIndex++;
                 }
             }
@@ -413,7 +416,7 @@ namespace scope_measurement_demo
             .FirstOrDefault(line => line.Trim().StartsWith("L2"));
 
             ExtractMethod_4(l1Line, l2Line);
-            ConvertedData.AppendText($"L1: {l1Value}\tL2: {l2Value}\t");
+            ConvertedData.AppendText($"L1: {l1Value}\tL2: {l2Value},\t");
             //Keypress(3, l1Value, l2Value);
         }
 
@@ -620,105 +623,152 @@ namespace scope_measurement_demo
 
         }
 
-        private static bool InDesignMode =>
-        LicenseManager.UsageMode == LicenseUsageMode.Designtime;
-
-        protected override void OnLoad(EventArgs e)
+        private void UpdateStatus()
         {
-            base.OnLoad(e);
-            if (InDesignMode) return;   // don't touch Excel inside the Designer
+            if (_excel == null)
+            {
+                lblStatus.Text = "Excel: (not attached)";
+                return;
+            }
 
-            InitExcel();                 // attach/start Excel and subscribe events
-            TryShowCurrentSelection();   // update label once at startup
+            try
+            {
+                string wbName = _excel.ActiveWorkbook != null
+                    ? _excel.ActiveWorkbook.Name
+                    : "(no workbook)";
+                lblStatus.Text = $"Excel: attached ({_excel.Version}) — {wbName}";
+            }
+            catch
+            {
+                lblStatus.Text = "Excel: lost connection";
+                _excel = null;
+            }
         }
 
         private void Excel_SheetSelectionChange(object Sh, Excel.Range Target)
         {
-            if (IsHandleCreated)
+            if (InvokeRequired)
             {
-                if (InvokeRequired)
-                    BeginInvoke((Action)(() => UpdateLabel((Excel.Worksheet)Sh, Target)));
-                else
-                    UpdateLabel((Excel.Worksheet)Sh, Target);
+                // เรียกกลับไปทำงานใน UI thread
+                BeginInvoke(new Action(RefreshSelectionList));
+            }
+            else
+            {
+                RefreshSelectionList();
             }
         }
 
-        private void InitExcel()
+        private void RefreshSelectionList()
         {
+            lstSelection.Items.Clear();
+
+            if (_excel == null) return;
+
             try
             {
-                object excelObj = null;
-                try
+                var sel = _excel.Selection as Excel.Range;
+                if (sel == null)
                 {
-                    // Use Marshal.GetActiveObject from System.Runtime.InteropServices.ComTypes
-                    _excel = Interaction.GetObject(null, "Excel.Application") as Excel.Application;
-
+                    lstSelection.Items.Add("(No selection)");
+                    return;
                 }
-                catch
+
+                foreach (Excel.Range area in sel.Areas)
                 {
-                    // fallback if Excel is not running
+                    foreach (Excel.Range cell in area.Cells)
+                    {
+                        lstSelection.Items.Add(cell.Address[false, false]);
+                        Marshal.ReleaseComObject(cell);
+                    }
+                    Marshal.ReleaseComObject(area);
                 }
-                _excel = excelObj as Excel.Application;
-
+                Marshal.ReleaseComObject(sel);
             }
             catch
             {
-                _excel = new Excel.Application { Visible = true };
-                _weStartedExcel = true;
+                lstSelection.Items.Add("(Cannot read selection)");
             }
-
-        // subscribe to selection changes (fires for any sheet)
-        ((Excel.AppEvents_Event)_excel).SheetSelectionChange += Excel_SheetSelectionChange;
         }
 
-        private void TryShowCurrentSelection()
+        private void SendValuesToExcel()
+        {
+            if (_excel == null)
+            {
+                MessageBox.Show("Excel not attached.", "Info",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string[] values = ConvertedData.Text.Split(
+                new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            try
+            {
+                var sel = _excel.Selection as Excel.Range;
+                if (sel == null)
+                {
+                    MessageBox.Show("No cells selected in Excel.", "Info");
+                    return;
+                }
+
+                var cells = sel.Cells;
+                int i = 0;
+                foreach (Excel.Range c in cells)
+                {
+                    if (i >= values.Length) break;
+                    c.Value2 = values[i].Trim();
+                    i++;
+                    Marshal.ReleaseComObject(c);
+                }
+
+                Marshal.ReleaseComObject(cells);
+                Marshal.ReleaseComObject(sel);
+                RefreshSelectionList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to send: " + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        internal static class NativeMethods
+        {
+            [DllImport("ole32.dll", CharSet = CharSet.Unicode)]
+            internal static extern int CLSIDFromProgID(string lpszProgID, out Guid pclsid);
+
+            [DllImport("oleaut32.dll", PreserveSig = false)]
+            private static extern void GetActiveObject(ref Guid rclsid, IntPtr reserved,
+                [MarshalAs(UnmanagedType.IUnknown)] out object ppunk);
+
+            internal static object GetActiveObjectNoMarshal(Guid clsid)
+            {
+                GetActiveObject(ref clsid, IntPtr.Zero, out object obj);
+                return obj;
+            }
+        }
+
+        private void AttachExcel_Click(object sender, EventArgs e)
         {
             try
             {
-                if (_excel?.Selection is Excel.Range sel)
-                    UpdateLabel(sel.Worksheet, sel);
-                else
-                    excelcel.Text = "Excel: no selection.";
+                if (NativeMethods.CLSIDFromProgID("Excel.Application", out Guid clsid) != 0)
+                    throw new COMException("CLSIDFromProgID failed");
+
+                object excelObj = NativeMethods.GetActiveObjectNoMarshal(clsid);
+                if (excelObj == null)
+                    throw new COMException("Excel is not running");
+
+                _excel = (Excel.Application)excelObj;
+                _excel.SheetSelectionChange += Excel_SheetSelectionChange;
+
+                lblStatus.Text = "Excel: attached (" + _excel.Version + ")";
+                RefreshSelectionList();
             }
-            catch
+            catch (Exception ex)
             {
-                excelcel.Text = "Excel: no workbook open.";
+                lblStatus.Text = "Excel: not attached (" + ex.Message + ")";
             }
-        }
-
-        private void UpdateLabel(Excel.Worksheet sheet, Excel.Range selection)
-        {
-            // Address in A1 style; preview top-left value
-            string sheetName = sheet?.Name ?? "(unknown)";
-            string address = selection?.Address[ReferenceStyle: Excel.XlReferenceStyle.xlA1] ?? "(none)";
-
-            object v = null;
-            try { v = selection?.Cells[1, 1]?.Value2; } catch { }
-
-            string preview = v switch
-            {
-                null => "(empty)",
-                double d => d.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                DateTime dt => dt.ToString("yyyy-MM-dd HH:mm:ss"),
-                _ => v?.ToString()
-            };
-
-            long count = 1;
-            try { count = (long)selection.CountLarge; } catch { /* older Excel */ }
-
-            excelcel.Text = count > 1
-                ? $"Sheet: {sheetName}  |  Range: {address}  |  Cells: {count}  |  Top-left: {preview}"
-                : $"Sheet: {sheetName}  |  Cell: {address}  |  Value: {preview}";
-        }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            try { if (_excel != null) ((Excel.AppEvents_Event)_excel).SheetSelectionChange -= Excel_SheetSelectionChange; } catch { }
-            try { if (_weStartedExcel && _excel?.Workbooks.Count == 0) _excel.Quit(); } catch { }
-            if (_excel != null) Marshal.FinalReleaseComObject(_excel);
-            _excel = null;
-
-            base.OnFormClosing(e);
         }
     }
 
@@ -734,20 +784,4 @@ namespace scope_measurement_demo
         public double X { get; set; }
         public double Y { get; set; }
     }
-
-    public class Generation
-    {
-        public double L { get; set; }
-        public double dX { get; set; }
-        public double dY { get; set; }
-        public double Xc { get; set; }
-        public double Yc { get; set; }
-        public double D { get; set; }
-        public double R { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-    }
-
-
-
 }
